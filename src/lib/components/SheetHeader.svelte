@@ -12,7 +12,7 @@
 </script>
 
 <header class="sheet-header mb-6 slide-up">
-  <div class="flex items-center gap-3">
+  <div class="flex items-baseline gap-3">
     <h1 class="text-3xl font-display font-bold tracking-tight text-white">{title}</h1>
     <button
       onclick={handleCopy}
