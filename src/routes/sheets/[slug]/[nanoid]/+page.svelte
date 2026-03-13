@@ -16,6 +16,12 @@
   let editingExpenseId = $state<number | null>(null);
   let editingExpense = $state<Expense | null>(null);
   let localExpenses = $state<Expense[]>([]);
+  
+  // Form field states
+  let formDescription = $state('');
+  let formAmount = $state('');
+  let formPaidBy = $state('');
+  let formSplitType = $state('equal');
 
   // Initialize local expenses from data
   $effect(() => {
@@ -25,15 +31,23 @@
   function openAddDrawer() {
     editingExpenseId = null;
     editingExpense = null;
-    splitType = 'equal';
+    formSplitType = 'equal';
+    formDescription = '';
+    formAmount = '';
+    formPaidBy = '';
     isDrawerOpen = true;
   }
 
   function openEditDrawer(expense: Expense) {
     editingExpenseId = expense.id;
     editingExpense = expense;
-    splitType = expense.splitType || 'equal';
+    formSplitType = expense.splitType || 'equal';
     isDrawerOpen = true;
+    
+    // Update form fields
+    formDescription = expense.description;
+    formAmount = (expense.amount / 100).toFixed(2);
+    formPaidBy = expense.paidBy.toString();
   }
 
   function getShareUrl() {
@@ -170,9 +184,13 @@
                   localExpenses = expensesData;
                 }
                 isDrawerOpen = false;
-                // Reset editing state
+                // Reset editing state and form fields
                 editingExpenseId = null;
                 editingExpense = null;
+                formDescription = '';
+                formAmount = '';
+                formPaidBy = '';
+                formSplitType = 'equal';
               }
             };
           }}
@@ -188,7 +206,7 @@
         id="description"
         name="description"
         required
-        value={editingExpense?.description || ''}
+        bind:value={formDescription}
         class="w-full px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
         placeholder="What was this expense for?"
       />
@@ -216,7 +234,7 @@
           required
           min="0"
           step="0.01"
-          value={editingExpense ? (editingExpense.amount / 100).toFixed(2) : ''}
+          bind:value={formAmount}
           class="flex-1 px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
           placeholder="0.00"
         />
@@ -229,11 +247,12 @@
         id="paidBy"
         name="paidBy"
         required
+        bind:value={formPaidBy}
         class="w-full px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
       >
         <option value="">Select who paid</option>
         {#each data.participants as participant}
-          <option value={participant.id} selected={editingExpense?.paidBy === participant.id}>{participant.name}</option>
+          <option value={participant.id}>{participant.name}</option>
         {/each}
       </select>
     </div>
@@ -246,7 +265,7 @@
             type="radio"
             name="splitType"
             value="equal"
-            bind:group={splitType}
+            bind:group={formSplitType}
             class="text-[#CB8E4C] focus:ring-[#CB8E4C]"
           />
           <span class="text-neutral-300">Equal</span>
@@ -256,7 +275,7 @@
             type="radio"
             name="splitType"
             value="custom"
-            bind:group={splitType}
+            bind:group={formSplitType}
             class="text-[#CB8E4C] focus:ring-[#CB8E4C]"
           />
           <span class="text-neutral-300">Custom</span>
