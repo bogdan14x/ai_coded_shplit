@@ -16,7 +16,7 @@
     <h1 class="text-3xl font-display font-bold tracking-tight text-white">{title}</h1>
     <button
       onclick={handleCopy}
-      class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer border border-neutral-700"
+      class="px-3 py-1.5 bg-transparent hover:bg-neutral-800 text-neutral-400 hover:text-neutral-300 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer"
     >
       {#if copySuccess}
         <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +27,7 @@
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
         </svg>
-        <span>Invite</span>
+        <span>Copy Invite Link</span>
       {/if}
     </button>
   </div>
