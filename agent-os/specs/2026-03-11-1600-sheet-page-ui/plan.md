@@ -33,8 +33,8 @@ Create `agent-os/specs/2026-03-11-1600-sheet-page-ui/` with:
 3. Create reusable components:
    - `SheetHeader.svelte` — Title and description
    - `ExpenseList.svelte` — List of expenses
-   - `ParticipantList.svelte` — List of participants
    - `SettleUpButton.svelte` — Settle Up button (disabled)
+   - Use AvatarGroup component for participants display below title
 
 ### Task 5: Implement mobile-first responsive layout
 

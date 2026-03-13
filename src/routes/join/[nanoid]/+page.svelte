@@ -42,7 +42,7 @@
 
         <button
           type="submit"
-          class="w-full py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200"
+          class="w-full py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 cursor-pointer"
         >
           Join Sheet
         </button>
@@ -51,7 +51,7 @@
       <div class="text-center bg-neutral-900 rounded-2xl p-6 shadow-lg border border-neutral-800">
         <h2 class="text-xl font-bold text-white mb-2">Sheet Not Found</h2>
         <p class="text-neutral-400 mb-4">This sheet doesn't exist or has been removed.</p>
-        <a href="/" class="inline-block px-6 py-3 bg-[#CB8E4C] text-white rounded-lg hover:bg-[#B87D3D] transition-colors">
+        <a href="/" class="inline-block px-6 py-3 bg-[#CB8E4C] text-white rounded-lg hover:bg-[#B87D3D] transition-colors cursor-pointer">
           Go Home
         </a>
       </div>

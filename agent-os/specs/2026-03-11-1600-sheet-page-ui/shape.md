@@ -6,8 +6,8 @@ Build a mobile-first sheet page UI for shibasplit expense tracking app. This is 
 
 The sheet page should display:
 - Sheet title and description
+- Participants displayed via AvatarGroup below the title
 - List of expenses (read-only for now)
-- List of participants
 - Settle Up button (disabled/non-functional)
 
 ## Decisions

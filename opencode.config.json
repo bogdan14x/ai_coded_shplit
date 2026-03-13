@@ -1,0 +1,16 @@
+{
+  "projectName": "shibasplit",
+  "rules": [
+    "Use TypeScript, not JavaScript.",
+    "Never write raw SQL; always use Drizzle.",
+    "Write unit tests for new logic with Vitest.",
+    "Use SvelteKit for the frontend.",
+    "Use TailwindCSS for styling.",
+    "Never write any code comments.",
+    "Always check context7 when writing new logic and you are not absolutely sure that the patterns you are using are in line with latest best practices for the current version of our dependencies."
+  ],
+  "paths": {
+    "source": "src",
+    "tests": "tests"
+  }
+}

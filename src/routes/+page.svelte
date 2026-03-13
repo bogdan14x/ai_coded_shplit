@@ -40,7 +40,7 @@
           {#each data.recentSheets as sheet}
             <a
               href="/sheets/{sheet.slug}/{sheet.nanoid}"
-              class="flex-shrink-0 w-40 bg-neutral-800 rounded-lg p-4 hover:bg-neutral-700 transition-colors border border-neutral-700"
+              class="flex-shrink-0 w-40 bg-neutral-800 rounded-lg p-4 hover:bg-neutral-700 transition-colors border border-neutral-700 cursor-pointer"
             >
               <p class="text-white font-medium truncate">{sheet.slug}</p>
               <p class="text-neutral-400 text-xs mt-1">View split</p>
@@ -73,10 +73,10 @@
              maxlength="300"
              title="Only letters, numbers, dashes (-), underscores (_), spaces, and emojis allowed"
            />
-           <button
-             type="submit"
-             class="px-8 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:ring-offset-2 focus:ring-offset-neutral-950 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
-           >
+            <button
+              type="submit"
+              class="px-8 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:ring-offset-2 focus:ring-offset-neutral-950 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            >
              Create Sheet
            </button>
          </div>

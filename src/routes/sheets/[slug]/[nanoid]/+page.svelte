@@ -2,10 +2,10 @@
   import { enhance } from '$app/forms';
   import SheetHeader from '$lib/components/SheetHeader.svelte';
   import ExpenseList from '$lib/components/ExpenseList.svelte';
-  import ParticipantList from '$lib/components/ParticipantList.svelte';
   import SettleUpButton from '$lib/components/SettleUpButton.svelte';
   import Drawer from '$lib/components/Drawer.svelte';
   import Logo from '$lib/components/Logo.svelte';
+  import { Root as AvatarGroup, Item as AvatarGroupItem } from '$lib/components/ui/avatar-group';
   import type { Sheet, Participant, Expense } from '$lib/db';
   import type { PageData, ActionData } from './$types';
 
@@ -33,7 +33,7 @@
 
   function getShareUrl() {
     if (typeof window !== 'undefined' && data.sheet) {
-      return `${window.location.origin}/sheets/${data.sheet.slug}/${data.sheet.nanoid}`;
+      return `${window.location.origin}/join/${data.sheet.nanoid}`;
     }
     return '';
   }
@@ -59,18 +59,59 @@
   {#if data.sheet}
     <SheetHeader title={data.sheet.name} description={data.sheet.description || ''} />
 
+    <!-- Participants Avatar Group -->
+    <div class="mb-4 flex items-center gap-3">
+      {#if data.participants.length > 0}
+        <AvatarGroup class="h-10 w-10">
+          {#each data.participants.slice(0, 5) as participant (participant.id)}
+            <AvatarGroupItem>
+              {participant.name.charAt(0).toUpperCase()}
+            </AvatarGroupItem>
+          {/each}
+          {#if data.participants.length > 5}
+            <AvatarGroupItem class="bg-neutral-700 text-neutral-300 text-sm">
+              +{data.participants.length - 5}
+            </AvatarGroupItem>
+          {/if}
+        </AvatarGroup>
+        <span class="text-neutral-400 text-sm">
+          {data.participants.length} participant{data.participants.length !== 1 ? 's' : ''}
+        </span>
+      {:else}
+        <p class="text-neutral-400 text-sm">No one has joined yet.</p>
+      {/if}
+    </div>
+
     <!-- Add Expense / Share Section -->
     <div class="mb-6">
       {#if data.participants.length > 0}
-        <button
-          onclick={openAddDrawer}
-          class="w-full py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Add Expense
-        </button>
+        <div class="flex gap-3">
+          <button
+            onclick={copyToClipboard}
+            class="py-3 px-4 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2 border border-neutral-700 cursor-pointer"
+          >
+            {#if copySuccess}
+              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Copied!
+            {:else}
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+              Copy Invite Link
+            {/if}
+          </button>
+          <button
+            onclick={openAddDrawer}
+            class="flex-1 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Expense
+          </button>
+        </div>
       {:else}
         <!-- Invite People Card -->
         <div class="bg-neutral-900 rounded-xl p-5 shadow-lg border border-neutral-800">
@@ -85,7 +126,7 @@
             />
             <button
               onclick={copyToClipboard}
-              class="px-4 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center min-w-[100px] text-sm leading-none"
+              class="px-4 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center min-w-[100px] text-sm leading-none cursor-pointer"
             >
               {#if copySuccess}
                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,7 +143,6 @@
 
     <div class="grid gap-4 md:grid-cols-2">
       <ExpenseList expenses={data.expenses} participants={data.participants} onEdit={openEditDrawer} />
-      <ParticipantList participants={data.participants} />
     </div>
 
     <div class="mt-6">
@@ -233,7 +273,7 @@
     <div class="pt-4">
       <button
         type="submit"
-        class="w-full py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200"
+        class="w-full py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 cursor-pointer"
       >
         Save Expense
       </button>

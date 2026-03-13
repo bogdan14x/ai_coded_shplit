@@ -21,7 +21,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 - **Database Schema**: The database schema is defined in `src/lib/db/schema.ts` and includes `sheets`, `participants`, and `expenses` tables. The `sheets` table uses a `slug` and a `nanoid` for the URL.
 - **Nanoid Utility**: A utility for generating and parsing sheet IDs (`slug-nanoid`) was created in `src/lib/nanoid.ts`.
 - **Mock Data**: Previously, the app used mock data in `src/lib/mockData.ts`. This is now being replaced by the database.
-- **UI Components**: The UI is built with reusable Svelte components (`SheetHeader`, `ExpenseList`, `ParticipantList`, `SettleUpButton`, `Drawer`) located in `src/lib/components/`.
+- **UI Components**: The UI is built with reusable Svelte components (`SheetHeader`, `ExpenseList`, `SettleUpButton`, `Drawer`) located in `src/lib/components/`.
 - **Current State**: The project has a running development server with fully functional database backend, homepage, sheet page, expense editing, and recent sheets tracking.
 
 ## Accomplished
@@ -36,7 +36,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 ### Frontend & UI
 6.  **Svelte 5 Migration**: Updated all components to use Svelte 5 runes (`$props`, `$state`, `$bindable`).
 7.  **Homepage UI**: Created responsive homepage with hero section, feature highlights, and CTA form for sheet creation.
-8.  **Sheet Page UI**: Implemented sheet page with expenses list, participants list, and settlement functionality.
+8.  **Sheet Page UI**: Implemented sheet page with expenses list, AvatarGroup for participants display (always visible, showing "No one has joined yet" when empty), and settlement functionality.
 9.  **Dark Mode Theme**: Applied consistent dark mode with neutral background (`#0a0a0a`) and amber accent (`#CB8E4C`).
 10. **Expense Editing**: Implemented full expense editing functionality with modal drawer.
 11. **Share URL Feature**: Added disabled input with copy button that shows green checkmark for 3 seconds.
@@ -61,7 +61,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 ### Completed Features (MVP)
 - ✅ Sheet creation with unique URLs
 - ✅ Expense addition and editing
-- ✅ Participant management (join sheets)
+- ✅ Participant management (join sheets) - displayed via AvatarGroup
 - ✅ Recent sheets tracking via cookies
 - ✅ Share URL with copy functionality
 - ✅ Dark mode theme
@@ -94,9 +94,9 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 **UI Components:**
 - `src/lib/components/SheetHeader.svelte` - Sheet title and description
 - `src/lib/components/ExpenseList.svelte` - List of expenses with edit functionality
-- `src/lib/components/ParticipantList.svelte` - List of participants
 - `src/lib/components/SettleUpButton.svelte` - Settlement button
 - `src/lib/components/Drawer.svelte` - Modal drawer for expense editing
+- `src/lib/components/ui/avatar-group/AvatarGroup.svelte` - Avatar group component for displaying participants below the title
 
 **Routes:**
 - `src/routes/+page.svelte` (Homepage UI with hero, features, and CTA form - dark mode)
