@@ -3,7 +3,7 @@
   import SheetHeader from '$lib/components/SheetHeader.svelte';
   import ExpenseList from '$lib/components/ExpenseList.svelte';
   import SettleUpButton from '$lib/components/SettleUpButton.svelte';
-  import { Drawer } from 'vaul-svelte';
+  import Drawer from '$lib/components/Drawer.svelte';
   import Logo from '$lib/components/Logo.svelte';
   import { Root as AvatarGroup, Item as AvatarGroupItem } from '$lib/components/ui/avatar-group';
   import type { Sheet, Participant, Expense } from '$lib/db';
@@ -42,12 +42,13 @@
     editingExpenseId = expense.id;
     editingExpense = expense;
     formSplitType = expense.splitType || 'equal';
-    isDrawerOpen = true;
     
     // Update form fields
     formDescription = expense.description;
     formAmount = (expense.amount / 100).toFixed(2);
     formPaidBy = expense.paidBy.toString();
+    
+    isDrawerOpen = true;
   }
 
   function getShareUrl() {
@@ -157,47 +158,33 @@
 </main>
 
 <!-- Add/Edit Expense Drawer -->
-<Drawer.Root open={isDrawerOpen} onOpenChange={(open) => isDrawerOpen = open}>
-  <Drawer.Portal>
-    <Drawer.Overlay class="fixed inset-0 bg-black/50 z-40" />
-    <Drawer.Content class="fixed bottom-0 left-0 right-0 bg-neutral-900 rounded-t-3xl z-50 shadow-2xl max-h-[85vh] flex flex-col">
-      <div class="pt-3 pb-2 flex justify-center w-full cursor-pointer" data-vaul-handle>
-        <div class="w-12 h-1.5 bg-neutral-600 rounded-full"></div>
-      </div>
-      
-      <div class="px-6 py-3 border-b border-neutral-800">
-        <h2 class="text-xl font-semibold text-white text-center">
-          {editingExpenseId ? "Edit Expense" : "Add Expense"}
-        </h2>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-6">
-        <form 
-          method="POST" 
-          action={editingExpenseId ? `?/editExpense` : `?/addExpense`} 
-          use:enhance={() => {
-            return async ({ result }) => {
-              if (result.type === 'success' && result.data?.success) {
-                // Update local expenses with the returned data
-                const expensesData = (result.data as any)?.expenses;
-                if (expensesData && Array.isArray(expensesData)) {
-                  localExpenses = expensesData;
-                }
-                isDrawerOpen = false;
-                // Reset editing state and form fields
-                editingExpenseId = null;
-                editingExpense = null;
-                formDescription = '';
-                formAmount = '';
-                formPaidBy = '';
-                formSplitType = 'equal';
-              }
-            };
-          }}
-          class="space-y-4">
-          {#if editingExpenseId}
-            <input type="hidden" name="expenseId" value={editingExpenseId} />
-          {/if}
+<Drawer bind:isOpen={isDrawerOpen} title={editingExpenseId ? "Edit Expense" : "Add Expense"}>
+  <form 
+    method="POST" 
+    action={editingExpenseId ? `?/editExpense` : `?/addExpense`} 
+    use:enhance={() => {
+      return async ({ result }) => {
+        if (result.type === 'success' && result.data?.success) {
+          // Update local expenses with the returned data
+          const expensesData = (result.data as any)?.expenses;
+          if (expensesData && Array.isArray(expensesData)) {
+            localExpenses = expensesData;
+          }
+          isDrawerOpen = false;
+          // Reset editing state and form fields
+          editingExpenseId = null;
+          editingExpense = null;
+          formDescription = '';
+          formAmount = '';
+          formPaidBy = '';
+          formSplitType = 'equal';
+        }
+      };
+    }}
+    class="space-y-4">
+    {#if editingExpenseId}
+      <input type="hidden" name="expenseId" value={editingExpenseId} />
+    {/if}
 
     <div>
       <label for="description" class="block text-sm font-medium text-neutral-300 mb-1">Description</label>
@@ -295,8 +282,5 @@
         Save Expense
       </button>
     </div>
-        </form>
-      </div>
-    </Drawer.Content>
-  </Drawer.Portal>
-</Drawer.Root>
+  </form>
+</Drawer>
