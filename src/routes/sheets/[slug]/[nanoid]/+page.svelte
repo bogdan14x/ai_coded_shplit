@@ -48,7 +48,10 @@
     formAmount = (expense.amount / 100).toFixed(2);
     formPaidBy = expense.paidBy.toString();
     
-    isDrawerOpen = true;
+    // Force a microtask to ensure the form fields are updated before opening
+    Promise.resolve().then(() => {
+      isDrawerOpen = true;
+    });
   }
 
   function getShareUrl() {
@@ -239,7 +242,7 @@
       >
         <option value="">Select who paid</option>
         {#each data.participants as participant}
-          <option value={participant.id}>{participant.name}</option>
+          <option value={participant.id.toString()}>{participant.name}</option>
         {/each}
       </select>
     </div>
