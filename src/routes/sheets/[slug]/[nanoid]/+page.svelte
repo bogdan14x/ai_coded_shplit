@@ -141,7 +141,7 @@
       {/if}
     </div>
 
-    <div class="grid gap-4 md:grid-cols-2">
+    <div>
       <ExpenseList expenses={data.expenses} participants={data.participants} onEdit={openEditDrawer} />
     </div>
 
