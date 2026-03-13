@@ -9,7 +9,7 @@ node_modules
 /build
 .vscode
 .claude
-
+db.sqlite
 # OS
 .DS_Store
 Thumbs.db
