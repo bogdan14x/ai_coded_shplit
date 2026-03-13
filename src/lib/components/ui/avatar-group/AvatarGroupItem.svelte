@@ -4,7 +4,7 @@
   let { src = undefined, alt = undefined, class: className = '', children, ...rest } = $props();
 </script>
 
-<Avatar class={`border-2 border-neutral-900 ${className}`} {...rest}>
+<Avatar class={className} {...rest}>
   {#if src}
     <AvatarImage {src} {alt} />
   {/if}

@@ -3,7 +3,7 @@
 </script>
 
 <div
-  class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full {className}"
+  class="inline-block size-6 rounded-full ring-2 ring-neutral-900 outline -outline-offset-1 outline-white/10 overflow-hidden {className}"
   {...rest}
 >
   {@render children()}

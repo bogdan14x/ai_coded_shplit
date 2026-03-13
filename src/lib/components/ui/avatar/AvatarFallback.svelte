@@ -3,7 +3,7 @@
 </script>
 
 <div
-  class="flex h-full w-full items-center justify-center rounded-full bg-neutral-200 dark:bg-neutral-700 {className}"
+  class="flex h-full w-full items-center justify-center rounded-full bg-neutral-700 text-neutral-300 text-xs font-medium {className}"
   {...rest}
 >
   {@render children()}

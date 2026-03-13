@@ -56,14 +56,14 @@
     <!-- Participants Avatar Group -->
     <div class="mb-4 flex items-center gap-3">
       {#if data.participants.length > 0}
-        <AvatarGroup class="h-10 min-w-[120px]">
+        <AvatarGroup class="min-w-[100px]">
           {#each data.participants.slice(0, 5) as participant (participant.id)}
             <AvatarGroupItem>
               {participant.name.charAt(0).toUpperCase()}
             </AvatarGroupItem>
           {/each}
           {#if data.participants.length > 5}
-            <AvatarGroupItem class="bg-neutral-700 text-neutral-300 text-sm">
+            <AvatarGroupItem class="bg-neutral-700 text-neutral-300 text-xs">
               +{data.participants.length - 5}
             </AvatarGroupItem>
           {/if}
