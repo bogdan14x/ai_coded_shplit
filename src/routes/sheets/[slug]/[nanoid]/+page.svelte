@@ -54,7 +54,7 @@
     <SheetHeader title={data.sheet.name} description={data.sheet.description || ''} onCopyInvite={copyToClipboard} />
 
     <!-- Participants Avatar Group -->
-    <div class="mb-4 flex items-center gap-3">
+    <div class="mb-4 flex items-center gap-2">
       {#if data.participants.length > 0}
         <AvatarGroup class="min-w-[100px]">
           {#each data.participants.slice(0, 5) as participant (participant.id)}
