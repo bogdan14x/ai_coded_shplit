@@ -15,7 +15,6 @@
   let splitType = $state('equal');
   let editingExpenseId = $state<number | null>(null);
   let editingExpense = $state<Expense | null>(null);
-  let copySuccess = $state(false);
 
   function openAddDrawer() {
     editingExpenseId = null;
@@ -41,12 +40,7 @@
   function copyToClipboard() {
     const url = getShareUrl();
     if (url) {
-      navigator.clipboard.writeText(url).then(() => {
-        copySuccess = true;
-        setTimeout(() => {
-          copySuccess = false;
-        }, 3000);
-      });
+      navigator.clipboard.writeText(url);
     }
   }
 </script>
@@ -57,7 +51,7 @@
 
 <main class="max-w-2xl mx-auto px-4 py-6 min-h-screen bg-neutral-950 text-neutral-300">
   {#if data.sheet}
-    <SheetHeader title={data.sheet.name} description={data.sheet.description || ''} />
+    <SheetHeader title={data.sheet.name} description={data.sheet.description || ''} onCopyInvite={copyToClipboard} />
 
     <!-- Participants Avatar Group -->
     <div class="mb-4 flex items-center gap-3">
@@ -82,36 +76,18 @@
       {/if}
     </div>
 
-    <!-- Add Expense / Share Section -->
+    <!-- Add Expense Section -->
     <div class="mb-6">
       {#if data.participants.length > 0}
-        <div class="flex gap-3">
-          <button
-            onclick={copyToClipboard}
-            class="py-3 px-4 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2 border border-neutral-700 cursor-pointer"
-          >
-            {#if copySuccess}
-              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-              Copied!
-            {:else}
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-              </svg>
-              Copy Invite Link
-            {/if}
-          </button>
-          <button
-            onclick={openAddDrawer}
-            class="flex-1 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Expense
-          </button>
-        </div>
+        <button
+          onclick={openAddDrawer}
+          class="w-full py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Expense
+        </button>
       {:else}
         <!-- Invite People Card -->
         <div class="bg-neutral-900 rounded-xl p-5 shadow-lg border border-neutral-800">
@@ -128,13 +104,7 @@
               onclick={copyToClipboard}
               class="px-4 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center min-w-[100px] text-sm leading-none cursor-pointer"
             >
-              {#if copySuccess}
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                </svg>
-              {:else}
-                Copy
-              {/if}
+              Copy
             </button>
           </div>
         </div>
