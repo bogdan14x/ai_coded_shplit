@@ -15,6 +15,12 @@
   let splitType = $state('equal');
   let editingExpenseId = $state<number | null>(null);
   let editingExpense = $state<Expense | null>(null);
+  let localExpenses = $state<Expense[]>([]);
+
+  // Initialize local expenses from data
+  $effect(() => {
+    localExpenses = data.expenses;
+  });
 
   function openAddDrawer() {
     editingExpenseId = null;
@@ -112,7 +118,7 @@
     </div>
 
     <div>
-      <ExpenseList expenses={data.expenses} participants={data.participants} onEdit={openEditDrawer} />
+      <ExpenseList expenses={localExpenses} participants={data.participants} onEdit={openEditDrawer} />
     </div>
 
     <div class="mt-6">
@@ -138,17 +144,25 @@
 
 <!-- Add/Edit Expense Drawer -->
 <Drawer bind:isOpen={isDrawerOpen} title={editingExpenseId ? "Edit Expense" : "Add Expense"}>
-  <form 
-    method="POST" 
-    action={editingExpenseId ? `?/editExpense` : `?/addExpense`} 
-    use:enhance={() => {
-      return async ({ result }) => {
-        if (result.type === 'success' && result.data?.success) {
-          isDrawerOpen = false;
-        }
-      };
-    }}
-    class="space-y-4">
+    <form 
+      method="POST" 
+      action={editingExpenseId ? `?/editExpense` : `?/addExpense`} 
+      use:enhance={() => {
+        return async ({ result }) => {
+          if (result.type === 'success' && result.data?.success) {
+            // Update local expenses with the returned data
+            const expensesData = (result.data as any)?.expenses;
+            if (expensesData && Array.isArray(expensesData)) {
+              localExpenses = expensesData;
+            }
+            isDrawerOpen = false;
+            // Reset editing state
+            editingExpenseId = null;
+            editingExpense = null;
+          }
+        };
+      }}
+      class="space-y-4">
     {#if editingExpenseId}
       <input type="hidden" name="expenseId" value={editingExpenseId} />
     {/if}
