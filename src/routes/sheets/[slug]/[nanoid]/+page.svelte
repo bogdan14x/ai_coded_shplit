@@ -56,7 +56,7 @@
     <!-- Participants Avatar Group -->
     <div class="mb-4 flex items-center gap-2">
       {#if data.participants.length > 0}
-        <AvatarGroup class="min-w-[100px]">
+        <AvatarGroup>
           {#each data.participants.slice(0, 5) as participant (participant.id)}
             <AvatarGroupItem>
               {participant.name.charAt(0).toUpperCase()}
