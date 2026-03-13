@@ -5,6 +5,7 @@
   import ParticipantList from '$lib/components/ParticipantList.svelte';
   import SettleUpButton from '$lib/components/SettleUpButton.svelte';
   import Drawer from '$lib/components/Drawer.svelte';
+  import Logo from '$lib/components/Logo.svelte';
   import type { Sheet, Participant, Expense } from '$lib/db';
   import type { PageData, ActionData } from './$types';
 
@@ -116,6 +117,13 @@
       </a>
     </div>
   {/if}
+
+  <!-- Footer -->
+  <footer class="mt-12 pt-8 border-t border-neutral-800">
+    <div class="flex items-center justify-center gap-3">
+      <Logo size="sm" href="/" />
+    </div>
+  </footer>
 </main>
 
 <!-- Add/Edit Expense Drawer -->
