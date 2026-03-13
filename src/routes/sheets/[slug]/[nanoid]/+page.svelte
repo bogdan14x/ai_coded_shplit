@@ -157,7 +157,7 @@
 </main>
 
 <!-- Add/Edit Expense Drawer -->
-<Drawer.Root bind:open={isDrawerOpen}>
+<Drawer.Root open={isDrawerOpen} onOpenChange={(open) => isDrawerOpen = open}>
   <Drawer.Portal>
     <Drawer.Overlay class="fixed inset-0 bg-black/50 z-40" />
     <Drawer.Content class="fixed bottom-0 left-0 right-0 bg-neutral-900 rounded-t-3xl z-50 shadow-2xl max-h-[85vh] flex flex-col">
