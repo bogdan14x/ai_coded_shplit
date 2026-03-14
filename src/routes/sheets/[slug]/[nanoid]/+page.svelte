@@ -341,6 +341,12 @@
     {/if}
 
     <div class="pt-4 flex gap-3">
+      <button
+        type="submit"
+        class="flex-1 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 cursor-pointer"
+      >
+        {editingExpenseId ? 'Update' : 'Save'}
+      </button>
       {#if editingExpenseId}
         <button
           type="button"
@@ -353,12 +359,6 @@
           </svg>
         </button>
       {/if}
-      <button
-        type="submit"
-        class="flex-1 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 cursor-pointer"
-      >
-        {editingExpenseId ? 'Update' : 'Save'}
-      </button>
     </div>
   </form>
 </Drawer>
