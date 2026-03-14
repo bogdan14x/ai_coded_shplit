@@ -3,6 +3,7 @@
   import SheetHeader from '$lib/components/SheetHeader.svelte';
   import ExpenseList from '$lib/components/ExpenseList.svelte';
   import SettleUpButton from '$lib/components/SettleUpButton.svelte';
+  import SettlementModal from '$lib/components/SettlementModal.svelte';
   import Drawer from '$lib/components/Drawer.svelte';
   import Logo from '$lib/components/Logo.svelte';
   import { Root as AvatarGroup, Item as AvatarGroupItem } from '$lib/components/ui/avatar-group';
@@ -51,6 +52,7 @@
   }
 
   let isDrawerOpen = $state(false);
+  let isSettlementModalOpen = $state(false);
   let splitType = $state('equal');
   let editingExpenseId = $state<number | null>(null);
   let editingExpense = $state<Expense | null>(null);
@@ -208,32 +210,28 @@
       {/if}
     </div>
 
-    <!-- Settlement Currency Section -->
-    <div class="mb-4 flex items-center gap-2">
-      <span class="text-neutral-400 text-sm">Settlement Currency:</span>
-      <select
-        bind:value={settlementCurrency}
-        onchange={updateSettlementCurrency}
-        class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-sm rounded-lg border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] cursor-pointer"
-      >
-        {#each currencies as currency}
-          <option value={currency.code}>{currency.code} - {currency.name}</option>
-        {/each}
-      </select>
-    </div>
-
-    <!-- Add Expense Section -->
+    <!-- Action Buttons Section -->
     <div class="mb-6">
       {#if data.participants.length > 0}
-        <button
-          onclick={openAddDrawer}
-          class="w-full py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Add Expense
-        </button>
+        <div class="flex gap-3">
+          <!-- Add Expense Button -->
+          <button
+            onclick={openAddDrawer}
+            class="flex-1 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Expense
+          </button>
+          
+          <!-- Settlements Button -->
+          <SettleUpButton 
+            settlements={data.settlements} 
+            settlementCurrency={data.sheet?.settlementCurrency || 'USD'}
+            onOpenModal={() => isSettlementModalOpen = true}
+          />
+        </div>
       {:else}
         <!-- Invite People Card -->
         <div class="bg-neutral-900 rounded-xl p-5 shadow-lg border border-neutral-800">
@@ -259,10 +257,6 @@
 
     <div>
       <ExpenseList expenses={localExpenses} participants={data.participants} onEdit={openEditDrawer} />
-    </div>
-
-    <div class="mt-6">
-      <SettleUpButton settlements={data.settlements} settlementCurrency={data.sheet.settlementCurrency || 'USD'} />
     </div>
   {:else}
     <div class="text-center py-12">
@@ -626,3 +620,12 @@
     </div>
   </form>
 </Drawer>
+
+<!-- Settlements Modal -->
+<SettlementModal 
+  bind:isOpen={isSettlementModalOpen}
+  settlements={data.settlements}
+  settlementCurrency={data.sheet?.settlementCurrency || 'USD'}
+  currencies={currencies}
+  onUpdateCurrency={updateSettlementCurrency}
+/>
