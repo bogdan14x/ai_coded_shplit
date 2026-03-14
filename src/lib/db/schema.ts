@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 
 export const sheets = sqliteTable('sheets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -20,7 +20,10 @@ export const exchangeRates = sqliteTable('exchange_rates', {
   targetCurrency: text('target_currency', { length: 3 }).notNull(),
   rate: real('rate').notNull(),
   date: integer('date', { mode: 'timestamp' }).notNull().defaultNow(),
-});
+}, (table) => ({
+  // Index for faster lookups
+  baseTargetIdx: index('base_target_idx').on(table.baseCurrency, table.targetCurrency),
+}));
 
 export const participants = sqliteTable('participants', {
   id: integer('id').primaryKey({ autoIncrement: true }),
