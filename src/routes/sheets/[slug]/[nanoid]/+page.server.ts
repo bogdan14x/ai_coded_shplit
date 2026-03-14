@@ -254,7 +254,6 @@ export const actions: Actions = {
       db.select().from(expenses).where(eq(expenses.sheetId, sheet.id)).all(),
     ]);
 
-    const { calculateSettlements } = await import('$lib/currency');
     const { settlements } = await calculateSettlements(expensesList, participantsList, currency);
 
     return { success: true, settlements, settlementCurrency: currency };
