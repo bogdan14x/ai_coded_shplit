@@ -75,12 +75,15 @@
   });
   
   // Update settlement currency on the server
-  async function updateSettlementCurrency() {
+  async function updateSettlementCurrency(newCurrency?: string) {
+    const currencyToUpdate = newCurrency || settlementCurrency;
     try {
       await fetch(window.location.pathname + '?/updateSettlementCurrency', {
         method: 'POST',
-        body: new URLSearchParams({ currency: settlementCurrency })
+        body: new URLSearchParams({ currency: currencyToUpdate })
       });
+      // Update local state after successful server update
+      settlementCurrency = currencyToUpdate;
     } catch (error) {
       console.error('Failed to update settlement currency:', error);
     }

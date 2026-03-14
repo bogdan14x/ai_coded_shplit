@@ -46,8 +46,10 @@
 
   let localCurrency = $state(settlementCurrency);
   
+  // Only update localCurrency when modal opens or settlementCurrency changes from external source
   $effect(() => {
-    if (settlementCurrency !== localCurrency) {
+    if (isOpen && settlementCurrency) {
+      // Reset localCurrency to match parent's settlementCurrency when modal opens
       localCurrency = settlementCurrency;
     }
   });
