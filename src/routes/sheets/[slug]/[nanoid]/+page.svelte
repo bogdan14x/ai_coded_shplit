@@ -99,28 +99,35 @@ import type { PageData, ActionData } from './$types';
   // Update settlement currency on the server and refresh data
   async function updateSettlementCurrency(newCurrency?: string) {
     const currencyToUpdate = newCurrency || settlementCurrency;
+    console.log('Updating settlement currency to:', currencyToUpdate);
+    
     try {
       const response = await fetch(window.location.pathname + '?/updateSettlementCurrency', {
         method: 'POST',
         body: new URLSearchParams({ currency: currencyToUpdate })
       });
       
-      // SvelteKit form actions return data in a specific format
+      // SvelteKit form actions return the action's return value directly when using fetch
       const result = await response.json();
+      console.log('Server response:', result);
       
       // Update local state after successful server update
-      if (result.type === 'success' && result.data?.success) {
+      if (result.success) {
         settlementCurrency = currencyToUpdate;
         // Update settlements if returned by server
-        if (result.data.settlements) {
-          settlementsState = result.data.settlements;
+        if (result.settlements) {
+          console.log('Updating settlements with:', result.settlements);
+          settlementsState = result.settlements;
           // Also return for modal to use
-          return { settlements: result.data.settlements };
+          return { settlements: result.settlements };
         }
       }
     } catch (error) {
       console.error('Failed to update settlement currency:', error);
     }
+    
+    // Return current settlements if no update occurred
+    return { settlements: settlementsState };
   }
 
   // Initialize local expenses from data
@@ -183,9 +190,9 @@ import type { PageData, ActionData } from './$types';
     
     const result = await response.json();
     
-    if (result.type === 'success' && result.data?.success) {
+    if (result.success) {
       // Update local expenses with the returned data
-      const expensesData = (result.data as any)?.expenses;
+      const expensesData = result.expenses;
       if (expensesData && Array.isArray(expensesData)) {
         localExpenses = expensesData;
       }
@@ -661,7 +668,7 @@ import type { PageData, ActionData } from './$types';
 <!-- Settlements Modal -->
 <SettlementModal 
   bind:isOpen={isSettlementModalOpen}
-  settlements={data.settlements}
+  settlements={settlementsState}
   settlementCurrency={settlementCurrency}
   currencies={currencies}
   onUpdateCurrency={updateSettlementCurrency}
