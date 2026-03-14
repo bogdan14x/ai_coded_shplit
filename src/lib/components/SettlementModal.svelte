@@ -66,10 +66,10 @@
 </script>
 
 {#if isOpen}
-  <!-- Backdrop -->
+  <!-- Fullscreen Backdrop -->
   <div 
     transition:fade={{ duration: 200, easing: expoOut }}
-    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
     onclick={handleOverlayClick}
     onkeydown={(e) => e.key === 'Escape' && (isOpen = false)}
     role="dialog"
@@ -79,7 +79,9 @@
     <!-- Modal Container -->
     <div 
       transition:scale={{ duration: 300, easing: expoOut, start: 0.95 }}
-      class="relative w-full max-w-md bg-neutral-950 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden"
+      class="relative w-full max-w-md bg-neutral-950 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden cursor-default"
+      onclick={(e) => e.stopPropagation()}
+      role="presentation"
     >
       <!-- Header with gradient accent -->
       <div class="relative px-6 py-5 bg-black border-b border-neutral-800">
@@ -100,7 +102,7 @@
           
           <button 
             onclick={() => isOpen = false}
-            class="w-8 h-8 rounded-lg bg-neutral-900 hover:bg-neutral-800 flex items-center justify-center transition-colors"
+            class="w-8 h-8 rounded-lg bg-neutral-900 hover:bg-neutral-800 flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
