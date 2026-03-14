@@ -36,7 +36,7 @@
         <li style="animation-delay: {index * 0.1}s">
           <button
             type="button"
-            class="w-full flex justify-between items-center py-3 px-3 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors cursor-pointer text-left"
+            class="w-full flex justify-between items-center py-3 px-4 bg-neutral-800 rounded-lg hover:bg-neutral-700 transition-colors cursor-pointer text-left"
             onclick={() => handleEdit(expense)}
             onkeydown={(e) => e.key === 'Enter' && handleEdit(expense)}
           >
