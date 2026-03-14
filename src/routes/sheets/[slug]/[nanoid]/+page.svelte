@@ -15,6 +15,13 @@
   // Track settlements state separately to allow updates
   // Using type assertion to bypass type generation issues
   let settlementsState = $state((data as any).settlements || []);
+  
+  // Sync settlementsState when data changes
+  $effect.pre(() => {
+    if ((data as any).settlements) {
+      settlementsState = (data as any).settlements;
+    }
+  });
 
   // Currency list from exchange rates (base EUR)
   const currencies = [
@@ -74,7 +81,7 @@
   let settlementCurrency = $state(data.sheet?.settlementCurrency || 'USD');
   
   // Sync settlement currency when data changes
-  $effect(() => {
+  $effect.pre(() => {
     settlementCurrency = data.sheet?.settlementCurrency || 'USD';
   });
   
@@ -247,7 +254,7 @@
           <!-- Settlements Button -->
           <SettleUpButton 
             settlements={settlementsState} 
-            settlementCurrency={data.sheet?.settlementCurrency || 'USD'}
+            settlementCurrency={settlementCurrency}
             onOpenModal={() => isSettlementModalOpen = true}
           />
         </div>
@@ -644,7 +651,7 @@
 <SettlementModal 
   bind:isOpen={isSettlementModalOpen}
   settlements={data.settlements}
-  settlementCurrency={data.sheet?.settlementCurrency || 'USD'}
+  settlementCurrency={settlementCurrency}
   currencies={currencies}
   onUpdateCurrency={updateSettlementCurrency}
 />

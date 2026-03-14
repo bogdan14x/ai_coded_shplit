@@ -44,8 +44,13 @@
     { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
   ];
 
-  // Local state for currency selection, initialized from prop
+  // Local state for currency dropdown selection
   let selectedCurrency = $state(settlementCurrency);
+  
+  // Sync selectedCurrency when prop changes (modal reopens with new data)
+  $effect.pre(() => {
+    selectedCurrency = settlementCurrency;
+  });
   
   function handleOverlayClick(e: MouseEvent) {
     if (e.target === e.currentTarget) {
