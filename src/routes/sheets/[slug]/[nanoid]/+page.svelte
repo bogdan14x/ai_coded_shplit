@@ -54,6 +54,38 @@
     });
   }
 
+  async function handleDelete() {
+    if (!editingExpenseId) return;
+    
+    // Create a form data object for the delete action
+    const formData = new FormData();
+    formData.append('expenseId', editingExpenseId.toString());
+    
+    // Use fetch to call the delete action
+    const response = await fetch(window.location.pathname + '?/deleteExpense', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    
+    if (result.type === 'success' && result.data?.success) {
+      // Update local expenses with the returned data
+      const expensesData = (result.data as any)?.expenses;
+      if (expensesData && Array.isArray(expensesData)) {
+        localExpenses = expensesData;
+      }
+      isDrawerOpen = false;
+      // Reset editing state and form fields
+      editingExpenseId = null;
+      editingExpense = null;
+      formDescription = '';
+      formAmount = '';
+      formPaidBy = '';
+      formSplitType = 'equal';
+    }
+  }
+
   function getShareUrl() {
     if (typeof window !== 'undefined' && data.sheet) {
       return `${window.location.origin}/join/${data.sheet.nanoid}`;
@@ -162,11 +194,42 @@
 
 <!-- Add/Edit Expense Drawer -->
 <Drawer bind:isOpen={isDrawerOpen} title={editingExpenseId ? "Edit Expense" : "Add Expense"}>
+  {#if editingExpenseId}
+    <!-- Delete form (only for editing) -->
+    <form 
+      method="POST" 
+      action="?/deleteExpense"
+      use:enhance={() => {
+        return async ({ result }) => {
+          if (result.type === 'success' && result.data?.success) {
+            // Update local expenses with the returned data
+            const expensesData = (result.data as any)?.expenses;
+            if (expensesData && Array.isArray(expensesData)) {
+              localExpenses = expensesData;
+            }
+            isDrawerOpen = false;
+            // Reset editing state and form fields
+            editingExpenseId = null;
+            editingExpense = null;
+            formDescription = '';
+            formAmount = '';
+            formPaidBy = '';
+            formSplitType = 'equal';
+          }
+        };
+      }}
+      class="hidden"
+    >
+      <input type="hidden" name="expenseId" value={editingExpenseId} />
+      <button type="submit" id="delete-submit" aria-label="Delete expense"></button>
+    </form>
+  {/if}
+
   <form 
     method="POST" 
     action={editingExpenseId ? `?/editExpense` : `?/addExpense`} 
     use:enhance={() => {
-      return async ({ result }) => {
+      return async ({ result, formData }) => {
         if (result.type === 'success' && result.data?.success) {
           // Update local expenses with the returned data
           const expensesData = (result.data as any)?.expenses;
@@ -277,12 +340,21 @@
       <p class="text-red-400 text-sm">{form.error}</p>
     {/if}
 
-    <div class="pt-4">
+    <div class="pt-4 flex gap-3">
+      {#if editingExpenseId}
+        <button
+          type="button"
+          onclick={() => document.getElementById('delete-submit')?.click()}
+          class="flex-1 py-3 bg-[#DC2626] hover:bg-[#B91C1C] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 cursor-pointer"
+        >
+          Delete
+        </button>
+      {/if}
       <button
         type="submit"
-        class="w-full py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 cursor-pointer"
+        class="flex-1 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 cursor-pointer"
       >
-        Save Expense
+        {editingExpenseId ? 'Update' : 'Save'}
       </button>
     </div>
   </form>

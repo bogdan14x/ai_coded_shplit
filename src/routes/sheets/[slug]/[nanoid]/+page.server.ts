@@ -150,5 +150,42 @@ export const actions: Actions = {
       success: true, 
       expenses: updatedExpenses 
     };
+  },
+
+  deleteExpense: async ({ request, params }) => {
+    const { slug, nanoid } = params;
+    const formData = await request.formData();
+
+    const expenseIdStr = formData.get('expenseId')?.toString();
+    if (!expenseIdStr) {
+      return { error: 'Expense ID is required' };
+    }
+
+    const expenseId = parseInt(expenseIdStr, 10);
+    if (isNaN(expenseId)) {
+      return { error: 'Invalid expense ID' };
+    }
+
+    const sheet = await getSheetByParams(slug, nanoid);
+    if (!sheet) {
+      return { error: 'Sheet not found' };
+    }
+
+    const expense = await db.select().from(expenses).where(
+      and(eq(expenses.id, expenseId), eq(expenses.sheetId, sheet.id))
+    ).get();
+
+    if (!expense) {
+      return { error: 'Expense not found or does not belong to this sheet' };
+    }
+
+    await db.delete(expenses).where(eq(expenses.id, expenseId)).run();
+
+    const updatedExpenses = await getUpdatedExpenses(sheet.id);
+
+    return { 
+      success: true, 
+      expenses: updatedExpenses 
+    };
   }
 };
