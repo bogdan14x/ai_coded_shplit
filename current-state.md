@@ -28,10 +28,11 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 
 ### Core Infrastructure
 1.  **SvelteKit Setup**: Initialized a SvelteKit project with Tailwind CSS v4.
-2.  **Database Schema**: Defined the Drizzle ORM schema for sheets, participants, and expenses.
+2.  **Database Schema**: Defined the Drizzle ORM schema for sheets, participants, expenses, and exchange rates.
 3.  **Nanoid Utility**: Implemented functions to generate and parse sheet IDs with minimum 10 character length.
 4.  **Database Initialization**: Created `drizzle.config.ts` and ran `drizzle-kit push` to create database tables.
 5.  **Database Seeding**: Executed `src/lib/db/seed.ts` to populate the database with sample data.
+6.  **Exchange Rates**: Added exchange rates table with 30 currencies and seeded with data from exchange API.
 
 ### Frontend & UI
 6.  **Svelte 5 Migration**: Updated all components to use Svelte 5 runes (`$props`, `$state`, `$bindable`).
@@ -42,6 +43,11 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 11. **Share URL Feature**: Added disabled input with copy button that shows green checkmark for 3 seconds.
 12. **Invite People Card**: Created card with title, description, share URL input, and copy button.
 13. **Recent Sheets Tracking**: Implemented cookie-based tracking of recently visited sheets (max 3 shown on homepage).
+14. **Enhanced Split Type Picker**: Replaced radio buttons with visual toggle cards showing icons and per-participant amount previews.
+15. **Equal Split Contribution Table**: Added detailed breakdown showing how much each participant will contribute.
+16. **Paid By Selector Redesign**: Replaced dropdown with button grid showing participant avatars and names.
+17. **Currency Picker**: Created searchable currency selector with 30 currencies and symbol display.
+18. **Delete Expense Functionality**: Added delete button with trash icon in expense drawer.
 
 ### Server-Side Logic
 14. **Data Loading**: Created `+page.server.ts` to load data from database using Drizzle ORM queries.
@@ -51,7 +57,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 18. **Performance Optimization**: Used `Promise.all()` for parallel database queries in load function.
 
 ### Testing & Quality
-19. **Comprehensive Test Suite**: 37 tests across 4 test files covering all major functionality.
+19. **Comprehensive Test Suite**: 56 tests across 5 test files covering all major functionality (including exchange rates and settlement calculations).
 20. **Test Isolation**: Proper `beforeAll`/`afterAll` cleanup for all database tests.
 21. **Edge Case Coverage**: Tests for invalid amounts, missing fields, empty sheets, and boundary conditions.
 22. **Type Safety**: All TypeScript checks pass with no errors or warnings.
@@ -68,11 +74,9 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 - ✅ Comprehensive test coverage
 
 ### Remaining MVP Features (from UX Research)
-1. **Settlement Calculation Algorithm** - Core feature: Calculate minimum transactions to settle debts
-2. **Custom Split Implementation** - Allow uneven expense splitting
-3. **Expense Deletion** - Remove expenses from sheets
-4. **Participant Management** - Edit/remove participants
-5. **Sheet Editing** - Edit sheet names/descriptions
+1. **Expense Deletion** - Remove expenses from sheets (implemented, needs confirmation dialog)
+2. **Participant Management** - Edit/remove participants
+3. **Sheet Editing** - Edit sheet names/descriptions
 
 ### Future Enhancements
 - Deployment to production environment (Cloudflare D1)
@@ -161,6 +165,6 @@ npm run build
 
 ---
 
-**Last Updated**: 2026-03-13
-**Total Tests**: 37 passing
+**Last Updated**: 2026-03-14
+**Total Tests**: 56 passing
 **Type Check**: 0 errors, 0 warnings
