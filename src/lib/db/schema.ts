@@ -50,6 +50,7 @@ export const expenses = sqliteTable('expenses', {
   amount: integer('amount').notNull(),
   currency: text('currency', { length: 3 }).default('USD'),
   splitType: text('split_type', { enum: ['equal', 'custom'] }).notNull().default('equal'),
+  customSplitData: text('custom_split_data'), // JSON string: { participantId: amountInCents }
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().defaultNow(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().defaultNow(),
 });

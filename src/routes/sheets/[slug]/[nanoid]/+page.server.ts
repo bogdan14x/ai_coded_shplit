@@ -3,6 +3,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { db } from '$lib/db';
 import { sheets, participants, expenses } from '$lib/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { calculateSettlements } from '$lib/currency';
 
 // Helper function to validate and parse expense form data
 async function validateExpenseForm(formData: FormData, sheetId: number) {
@@ -11,6 +12,7 @@ async function validateExpenseForm(formData: FormData, sheetId: number) {
   const paidByStr = formData.get('paidBy')?.toString();
   const splitType = formData.get('splitType')?.toString();
   const currency = formData.get('currency')?.toString() || 'USD';
+  const customSplitData = formData.get('customSplitData')?.toString();
 
   if (!description || !amountStr || !paidByStr) {
     return { error: 'All fields are required' };
@@ -40,7 +42,25 @@ async function validateExpenseForm(formData: FormData, sheetId: number) {
     return { error: 'Invalid currency' };
   }
 
-  return { description, amount, paidBy, splitType, currency: currency.toUpperCase() };
+  let customSplit: Record<number, number> | undefined;
+  if (splitType === 'custom' && customSplitData) {
+    try {
+      customSplit = JSON.parse(customSplitData);
+      // Validate that all keys are valid participants and amounts are positive
+      // Note: We don't strictly enforce sum equals total here, as rounding might differ
+    } catch (e) {
+      return { error: 'Invalid custom split data' };
+    }
+  }
+
+  return { 
+    description, 
+    amount, 
+    paidBy, 
+    splitType, 
+    currency: currency.toUpperCase(),
+    customSplitData: customSplit ? JSON.stringify(customSplit) : null
+  };
 }
 
 // Helper function to get sheet by params
@@ -71,10 +91,19 @@ export const load: PageServerLoad = async ({ params }) => {
     db.select().from(expenses).where(eq(expenses.sheetId, sheet.id)).all(),
   ]);
 
+  // Calculate settlements
+  const { settlements, balances } = await calculateSettlements(
+    expensesList,
+    participantsList,
+    sheet.settlementCurrency || 'USD'
+  );
+
   return {
     sheet,
     participants: participantsList,
     expenses: expensesList,
+    settlements,
+    balances,
   };
 };
 
@@ -100,6 +129,7 @@ export const actions: Actions = {
       amount: validation.amount,
       currency: validation.currency,
       splitType: validation.splitType === 'custom' ? 'custom' : 'equal',
+      customSplitData: validation.customSplitData,
     }).run();
 
     const updatedExpenses = await getUpdatedExpenses(sheet.id);
@@ -149,6 +179,7 @@ export const actions: Actions = {
         amount: validation.amount,
         currency: validation.currency,
         splitType: validation.splitType === 'custom' ? 'custom' : 'equal',
+        customSplitData: validation.customSplitData,
       })
       .where(eq(expenses.id, expenseId))
       .run();

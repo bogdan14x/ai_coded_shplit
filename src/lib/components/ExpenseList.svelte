@@ -50,9 +50,11 @@
           >
             <div class="flex-1">
               <p class="font-medium text-white">{expense.description}</p>
-              <p class="text-sm text-neutral-400 flex items-center mt-1">
-                <span class="w-2 h-2 bg-[#CB8E4C] rounded-full mr-2"></span>
+              <p class="text-sm text-neutral-400 flex items-center mt-1 gap-2">
+                <span class="w-2 h-2 bg-[#CB8E4C] rounded-full"></span>
                 Paid by {getParticipantName(expense.paidBy)}
+                <span class="text-neutral-600">•</span>
+                <span class="text-neutral-500 text-xs uppercase">{expense.splitType || 'equal'}</span>
               </p>
             </div>
             <span class="font-semibold text-[#CB8E4C] text-lg">{formatAmount(expense.amount, expense.currency || 'USD')}</span>

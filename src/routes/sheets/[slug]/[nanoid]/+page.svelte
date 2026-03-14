@@ -62,9 +62,15 @@
   let formPaidBy = $state('');
   let formSplitType = $state('equal');
   let formCurrency = $state('USD');
+  let customSplitAmounts = $state<Record<number, string>>({}); // participantId -> amount string
   
   // Settlement currency state - initialize from sheet or default to USD
-  let settlementCurrency = $state((data.sheet as any)?.settlementCurrency || 'USD');
+  let settlementCurrency = $state(data.sheet?.settlementCurrency || 'USD');
+  
+  // Sync settlement currency when data changes
+  $effect(() => {
+    settlementCurrency = data.sheet?.settlementCurrency || 'USD';
+  });
   
   // Update settlement currency on the server
   async function updateSettlementCurrency() {
@@ -104,6 +110,18 @@
     formAmount = (expense.amount / 100).toFixed(2);
     formPaidBy = expense.paidBy.toString();
     formCurrency = (expense as any).currency || data.sheet?.currency || 'USD';
+    
+    // Load custom split amounts if available
+    if (formSplitType === 'custom' && (expense as any).customSplitData) {
+      try {
+        customSplitAmounts = JSON.parse((expense as any).customSplitData);
+      } catch (e) {
+        console.error('Failed to parse custom split data', e);
+        customSplitAmounts = {};
+      }
+    } else {
+      customSplitAmounts = {};
+    }
     
     // Force a microtask to ensure the form fields are updated before opening
     Promise.resolve().then(() => {
@@ -244,7 +262,7 @@
     </div>
 
     <div class="mt-6">
-      <SettleUpButton />
+      <SettleUpButton settlements={data.settlements} settlementCurrency={data.sheet.settlementCurrency || 'USD'} />
     </div>
   {:else}
     <div class="text-center py-12">
@@ -436,7 +454,7 @@
         <!-- Equal Split Button -->
         <button
           type="button"
-          onclick={() => formSplitType = 'equal'}
+          onclick={() => { formSplitType = 'equal'; customSplitAmounts = {}; }}
           class={`relative p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
             formSplitType === 'equal' 
               ? 'border-[#CB8E4C] bg-[#CB8E4C]/10' 
@@ -507,13 +525,42 @@
       </div>
     </div>
 
-    <!-- Equal Split Preview Table -->
-    {#if formSplitType === 'equal' && formAmount && parseFloat(formAmount) > 0}
+    <!-- Custom Split Inputs -->
+    {#if formSplitType === 'custom'}
+      <div class="mt-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Amounts per person</span>
+          <span class="text-xs text-neutral-500">Total: {formCurrency} {formAmount || '0.00'}</span>
+        </div>
+        {#each data.participants as participant}
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs text-neutral-300">
+              {participant.name.charAt(0).toUpperCase()}
+            </div>
+            <span class="text-sm text-neutral-300 w-24 truncate">{participant.name}</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              bind:value={customSplitAmounts[participant.id]}
+              class="flex-1 px-3 py-2 rounded-lg border border-neutral-700 bg-neutral-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#CB8E4C]"
+              placeholder="0.00"
+            />
+          </div>
+        {/each}
+      </div>
+    {/if}
+    
+    <!-- Hidden input for custom split data -->
+    <input type="hidden" name="customSplitData" value={JSON.stringify(customSplitAmounts)} />
+
+    <!-- Split Preview Table -->
+    {#if formAmount && parseFloat(formAmount) > 0}
       <div class="mt-4 p-4 bg-neutral-900/50 rounded-xl border border-neutral-800">
         <div class="flex items-center justify-between mb-3">
           <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Contribution Breakdown</span>
           <span class="text-xs text-neutral-500">
-            {data.participants.length} ways
+            {formSplitType === 'equal' ? `${data.participants.length} ways` : 'Custom'}
           </span>
         </div>
         <div class="space-y-2">
@@ -526,7 +573,9 @@
                   <span class="text-xs text-neutral-500">(paid)</span>
                 </div>
                 <span class="text-sm text-[#CB8E4C] font-medium">
-                  ${(parseFloat(formAmount) / data.participants.length).toFixed(2)}
+                  {formSplitType === 'equal' 
+                    ? (parseFloat(formAmount) / data.participants.length).toFixed(2)
+                    : (customSplitAmounts[participant.id] || '0.00')}
                 </span>
               </div>
             {:else}
@@ -536,7 +585,9 @@
                   <span class="text-sm text-neutral-300">{participant.name}</span>
                 </div>
                 <span class="text-sm text-neutral-400">
-                  ${(parseFloat(formAmount) / data.participants.length).toFixed(2)}
+                  {formSplitType === 'equal' 
+                    ? (parseFloat(formAmount) / data.participants.length).toFixed(2)
+                    : (customSplitAmounts[participant.id] || '0.00')}
                 </span>
               </div>
             {/if}
