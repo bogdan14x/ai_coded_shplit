@@ -103,7 +103,7 @@
     formDescription = expense.description;
     formAmount = (expense.amount / 100).toFixed(2);
     formPaidBy = expense.paidBy.toString();
-    formCurrency = data.sheet?.currency || 'USD';
+    formCurrency = (expense as any).currency || data.sheet?.currency || 'USD';
     
     // Force a microtask to ensure the form fields are updated before opening
     Promise.resolve().then(() => {
