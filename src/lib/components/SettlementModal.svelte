@@ -44,13 +44,14 @@
     { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
   ];
 
-  let localCurrency = $state(settlementCurrency);
+  // Use derived value to sync with prop, but allow user selection to override
+  let selectedCurrency = $state(settlementCurrency);
   
-  // Only update localCurrency when modal opens or settlementCurrency changes from external source
+  // When prop changes (e.g., from parent), update selectedCurrency only if it differs
+  // This allows user selection to persist while still syncing external changes
   $effect(() => {
-    if (isOpen && settlementCurrency) {
-      // Reset localCurrency to match parent's settlementCurrency when modal opens
-      localCurrency = settlementCurrency;
+    if (settlementCurrency !== selectedCurrency) {
+      selectedCurrency = settlementCurrency;
     }
   });
   
@@ -62,7 +63,7 @@
   
   function handleCurrencyChange() {
     if (onUpdateCurrency) {
-      onUpdateCurrency(localCurrency);
+      onUpdateCurrency(selectedCurrency);
     }
   }
 </script>
@@ -120,7 +121,7 @@
         <div class="relative">
           <select
             id="settlement-currency"
-            bind:value={localCurrency}
+            bind:value={selectedCurrency}
             onchange={handleCurrencyChange}
             class="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-800 text-neutral-300 text-sm rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent transition-all"
           >
