@@ -48,6 +48,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 16. **Paid By Selector Redesign**: Replaced dropdown with button grid showing participant avatars and names.
 17. **Currency Picker**: Created searchable currency selector with 30 currencies and symbol display.
 18. **Delete Expense Functionality**: Added delete button with trash icon in expense drawer.
+19. **Refined Settlements UI**: Redesigned SettleUpButton with black background and amber accent border; moved to top action row; created centered modal with subtle gradients, smooth animations, and integrated currency selector.
 
 ### Server-Side Logic
 14. **Data Loading**: Created `+page.server.ts` to load data from database using Drizzle ORM queries.
@@ -167,4 +168,4 @@ npm run build
 
 **Last Updated**: 2026-03-14
 **Total Tests**: 56 passing
-**Type Check**: 0 errors, 0 warnings
+**Type Check**: 0 errors, 2 warnings (minor Svelte 5 state binding patterns)
