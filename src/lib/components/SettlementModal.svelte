@@ -1,17 +1,13 @@
 <script lang="ts">
   import { fade, scale } from 'svelte/transition';
   import { expoOut } from 'svelte/easing';
-  import { calculateSettlements } from '$lib/currency';
-  import type { Expense, Participant } from '$lib/db';
   
   let {
     isOpen = $bindable(),
     settlements = [] as Array<{ from: string; to: string; amount: number }>,
     settlementCurrency = 'USD',
     currencies = [] as Array<{ code: string; name: string; symbol: string }>,
-    onUpdateCurrency,
-    expenses = [] as Expense[],
-    participants = [] as Participant[]
+    onUpdateCurrency
   } = $props();
   
   // Currency list from exchange rates (base EUR)
@@ -66,20 +62,14 @@
   }
   
   let isCalculating = $state(false);
-  let recalculatedSettlements = $state<Array<{ from: string; to: string; amount: number }>>([]);
   
   async function handleCurrencyChange() {
     if (onUpdateCurrency) {
       isCalculating = true;
       try {
         // Call the parent's update function which will recalculate on the server
-        // and return the new settlements
-        const result = await onUpdateCurrency(selectedCurrency);
-        
-        // If the parent returns updated settlements, use them
-        if (result && result.settlements) {
-          recalculatedSettlements = result.settlements;
-        }
+        // The parent will update data.settlements which this component receives as prop
+        await onUpdateCurrency(selectedCurrency);
       } catch (error) {
         console.error('Failed to recalculate settlements:', error);
       } finally {
@@ -169,7 +159,7 @@
             </div>
             <p class="text-neutral-500 text-sm">Calculating...</p>
           </div>
-        {:else if (recalculatedSettlements.length > 0 ? recalculatedSettlements : settlements).length === 0}
+        {:else if settlements.length === 0}
           <div class="text-center py-8">
             <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-neutral-900 flex items-center justify-center">
               <svg class="w-6 h-6 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +170,7 @@
           </div>
         {:else}
           <div class="space-y-3">
-            {#each (recalculatedSettlements.length > 0 ? recalculatedSettlements : settlements) as settlement, i (settlement.from + settlement.to)}
+            {#each settlements as settlement, i (settlement.from + settlement.to)}
               <div 
                 class="group flex items-center justify-between p-4 bg-neutral-900/50 rounded-xl border border-neutral-800/50 hover:border-neutral-700 transition-all duration-300"
                 style="animation-delay: {i * 50}ms"

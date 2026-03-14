@@ -90,9 +90,9 @@
         // Update settlements if returned by server
         if (result.data.settlements) {
           data.settlements = result.data.settlements;
+          // Also return for modal to use
+          return { settlements: result.data.settlements };
         }
-        // Return the updated settlements for the modal
-        return result.data;
       }
     } catch (error) {
       console.error('Failed to update settlement currency:', error);
@@ -641,6 +641,4 @@
   settlementCurrency={data.sheet?.settlementCurrency || 'USD'}
   currencies={currencies}
   onUpdateCurrency={updateSettlementCurrency}
-  expenses={data.expenses}
-  participants={data.participants}
 />
