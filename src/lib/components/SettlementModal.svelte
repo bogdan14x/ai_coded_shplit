@@ -44,16 +44,8 @@
     { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
   ];
 
-  // Use derived value to sync with prop, but allow user selection to override
+  // Local state for currency selection, initialized from prop
   let selectedCurrency = $state(settlementCurrency);
-  
-  // When prop changes (e.g., from parent), update selectedCurrency only if it differs
-  // This allows user selection to persist while still syncing external changes
-  $effect(() => {
-    if (settlementCurrency !== selectedCurrency) {
-      selectedCurrency = settlementCurrency;
-    }
-  });
   
   function handleOverlayClick(e: MouseEvent) {
     if (e.target === e.currentTarget) {
@@ -67,9 +59,11 @@
     if (onUpdateCurrency) {
       isCalculating = true;
       try {
+        console.log('Currency changed to:', selectedCurrency);
         // Call the parent's update function which will recalculate on the server
         // The parent will update data.settlements which this component receives as prop
-        await onUpdateCurrency(selectedCurrency);
+        const result = await onUpdateCurrency(selectedCurrency);
+        console.log('Update result:', result);
       } catch (error) {
         console.error('Failed to recalculate settlements:', error);
       } finally {
@@ -193,7 +187,7 @@
                 <div class="flex items-center gap-2">
                   <div class="h-px w-8 bg-neutral-800 group-hover:bg-[#CB8E4C]/30 transition-colors"></div>
                   <span class="text-[#CB8E4C] font-semibold text-sm tracking-wide">
-                    {settlementCurrency} {(settlement.amount / 100).toFixed(2)}
+                    {selectedCurrency} {(settlement.amount / 100).toFixed(2)}
                   </span>
                 </div>
               </div>

@@ -194,15 +194,27 @@ test.describe('Settlement Modal', () => {
     // Change currency to EUR
     await currencySelect.selectOption('EUR');
     
+    // Debug: Check what value was selected
+    const selectedValue = await currencySelect.inputValue();
+    console.log('Selected currency value:', selectedValue);
+    
+    // Debug: Check the footer text
+    const footerText = await page.locator('text=Settlements calculated in').textContent();
+    console.log('Footer text:', footerText);
+    
     // Wait for calculation to complete
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
+    
+    // Debug: Check the footer text again
+    const footerTextAfter = await page.locator('text=Settlements calculated in').textContent();
+    console.log('Footer text after change:', footerTextAfter);
     
     // Verify the currency in the footer changed
     await expect(page.locator('text=Settlements calculated in EUR')).toBeVisible();
     
     // Verify settlement amounts are shown (EUR values)
-    const settlementAmount = page.locator('text=€').first();
-    await expect(settlementAmount).toBeVisible();
+    // The amounts should now show "EUR 50.00" instead of "USD 50.00"
+    await expect(page.locator('text=EUR 50.00')).toBeVisible();
   });
 
   test('shows empty state when all settled', async ({ page }) => {

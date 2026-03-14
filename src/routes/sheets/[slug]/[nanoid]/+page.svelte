@@ -12,6 +12,10 @@
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
+  // Track settlements state separately to allow updates
+  // Using type assertion to bypass type generation issues
+  let settlementsState = $state((data as any).settlements || []);
+
   // Currency list from exchange rates (base EUR)
   const currencies = [
     { code: 'EUR', name: 'Euro', symbol: '€' },
@@ -82,6 +86,8 @@
         method: 'POST',
         body: new URLSearchParams({ currency: currencyToUpdate })
       });
+      
+      // SvelteKit form actions return data in a specific format
       const result = await response.json();
       
       // Update local state after successful server update
@@ -89,7 +95,7 @@
         settlementCurrency = currencyToUpdate;
         // Update settlements if returned by server
         if (result.data.settlements) {
-          data.settlements = result.data.settlements;
+          settlementsState = result.data.settlements;
           // Also return for modal to use
           return { settlements: result.data.settlements };
         }
@@ -240,7 +246,7 @@
           
           <!-- Settlements Button -->
           <SettleUpButton 
-            settlements={data.settlements} 
+            settlements={settlementsState} 
             settlementCurrency={data.sheet?.settlementCurrency || 'USD'}
             onOpenModal={() => isSettlementModalOpen = true}
           />
