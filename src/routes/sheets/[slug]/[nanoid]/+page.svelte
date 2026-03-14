@@ -355,26 +355,31 @@
     <div>
       <label for="currency" class="block text-sm font-medium text-neutral-300 mb-1">Currency</label>
       <div class="relative">
-        <input
-          type="text"
-          id="currency"
-          name="currency"
-          bind:value={formCurrency}
-          class="w-full px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
-          placeholder="Search currency..."
-          autocomplete="off"
-          list="currency-list"
-        />
-        <datalist id="currency-list">
-          {#each currencies as currency}
-            <option value={currency.code}>{currency.name}</option>
-          {/each}
-        </datalist>
-        {#if getCurrencyByCode(formCurrency)}
-          <div class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm pointer-events-none">
-            {getCurrencyByCode(formCurrency)?.symbol}
+        <div class="flex items-center gap-2">
+          <div class={`flex-1 relative ${getCurrencyByCode(formCurrency) ? 'pr-12' : ''}`}>
+            <input
+              type="text"
+              id="currency"
+              name="currency"
+              bind:value={formCurrency}
+              class="w-full px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
+              placeholder="Search currency..."
+              autocomplete="off"
+              list="currency-list"
+            />
+            <datalist id="currency-list">
+              {#each currencies as currency}
+                <option value={currency.code}>{currency.name}</option>
+              {/each}
+            </datalist>
           </div>
-        {/if}
+          {#if getCurrencyByCode(formCurrency)}
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+              <span class="text-neutral-500 text-sm">|</span>
+              <span class="text-neutral-300 text-sm">{getCurrencyByCode(formCurrency)?.symbol}</span>
+            </div>
+          {/if}
+        </div>
       </div>
     </div>
 
