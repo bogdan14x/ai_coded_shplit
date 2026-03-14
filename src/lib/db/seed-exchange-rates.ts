@@ -37,10 +37,13 @@ const rates = {
 // Clear existing rates and insert new ones
 db.run('DELETE FROM exchange_rates');
 
+const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
+
 const exchangeRateEntries = Object.entries(rates).map(([targetCurrency, rate]) => ({
   baseCurrency: 'EUR',
   targetCurrency,
   rate,
+  lastUpdated: timestamp,
 }));
 
 db.insert(exchangeRates).values(exchangeRateEntries).run();

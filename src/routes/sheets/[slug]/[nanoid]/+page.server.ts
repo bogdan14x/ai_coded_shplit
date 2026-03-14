@@ -4,6 +4,7 @@ import { db } from '$lib/db';
 import { sheets, participants, expenses } from '$lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { calculateSettlements } from '$lib/currency';
+import { getAllOutdatedCurrencies } from '$lib/services/outdatedCurrencyService';
 
 // Helper function to validate and parse expense form data
 async function validateExpenseForm(formData: FormData, sheetId: number) {
@@ -98,12 +99,23 @@ export const load: PageServerLoad = async ({ params }) => {
     sheet.settlementCurrency || 'USD'
   );
 
+  // Check for outdated exchange rates across all currencies in database
+  // This is a non-blocking check that can fail silently
+  let outdatedCurrencies: string[] = [];
+  try {
+    outdatedCurrencies = await getAllOutdatedCurrencies();
+  } catch (error) {
+    console.error('Failed to check outdated currencies:', error);
+    // Continue without this information
+  }
+
   return {
     sheet,
     participants: participantsList,
     expenses: expensesList,
     settlements,
     balances,
+    outdatedCurrencies,
   };
 };
 

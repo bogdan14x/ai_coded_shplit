@@ -19,7 +19,7 @@ export const exchangeRates = sqliteTable('exchange_rates', {
   baseCurrency: text('base_currency', { length: 3 }).notNull().default('EUR'),
   targetCurrency: text('target_currency', { length: 3 }).notNull(),
   rate: real('rate').notNull(),
-  date: integer('date', { mode: 'timestamp' }).notNull().defaultNow(),
+  lastUpdated: integer('lastUpdated').notNull(),
 }, (table) => ({
   // Index for faster lookups
   baseTargetIdx: index('base_target_idx').on(table.baseCurrency, table.targetCurrency),

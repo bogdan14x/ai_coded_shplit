@@ -1,27 +1,21 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
-  import SheetHeader from '$lib/components/SheetHeader.svelte';
-  import ExpenseList from '$lib/components/ExpenseList.svelte';
-  import SettleUpButton from '$lib/components/SettleUpButton.svelte';
-  import SettlementModal from '$lib/components/SettlementModal.svelte';
-  import Drawer from '$lib/components/Drawer.svelte';
-  import Logo from '$lib/components/Logo.svelte';
-  import { Root as AvatarGroup, Item as AvatarGroupItem } from '$lib/components/ui/avatar-group';
-  import type { Sheet, Participant, Expense } from '$lib/db';
-  import type { PageData, ActionData } from './$types';
+import { enhance } from '$app/forms';
+import { onMount } from 'svelte';
+import SheetHeader from '$lib/components/SheetHeader.svelte';
+import ExpenseList from '$lib/components/ExpenseList.svelte';
+import SettleUpButton from '$lib/components/SettleUpButton.svelte';
+import SettlementModal from '$lib/components/SettlementModal.svelte';
+import Drawer from '$lib/components/Drawer.svelte';
+import Logo from '$lib/components/Logo.svelte';
+import { Root as AvatarGroup, Item as AvatarGroupItem } from '$lib/components/ui/avatar-group';
+import type { Sheet, Participant, Expense } from '$lib/db';
+import type { PageData, ActionData } from './$types';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
   // Track settlements state separately to allow updates
   // Using type assertion to bypass type generation issues
   let settlementsState = $state((data as any).settlements || []);
-  
-  // Sync settlementsState when data changes
-  $effect.pre(() => {
-    if ((data as any).settlements) {
-      settlementsState = (data as any).settlements;
-    }
-  });
 
   // Currency list from exchange rates (base EUR)
   const currencies = [
@@ -80,9 +74,26 @@
   // Settlement currency state - initialize from sheet or default to USD
   let settlementCurrency = $state(data.sheet?.settlementCurrency || 'USD');
   
+  // Outdated currencies from server
+  let outdatedCurrencies = $state((data as any).outdatedCurrencies || []);
+  
   // Sync settlement currency when data changes
   $effect.pre(() => {
     settlementCurrency = data.sheet?.settlementCurrency || 'USD';
+  });
+
+  // Background update for outdated rates (run once on mount)
+  onMount(() => {
+    if (outdatedCurrencies.length > 0 && outdatedCurrencies.includes(settlementCurrency)) {
+      // Trigger background update silently
+      fetch('/api/exchange-rates/update', {
+        method: 'POST'
+      }).then(() => {
+        console.log('Background rates update completed');
+      }).catch(err => {
+        console.error('Background rates update failed:', err);
+      });
+    }
   });
   
   // Update settlement currency on the server and refresh data

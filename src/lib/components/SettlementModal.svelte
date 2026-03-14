@@ -59,13 +59,38 @@
   }
   
   let isCalculating = $state(false);
+  let isUpdatingRates = $state(false);
   
   async function handleCurrencyChange() {
     if (onUpdateCurrency) {
       isCalculating = true;
       try {
         console.log('Currency changed to:', selectedCurrency);
-        // Call the parent's update function which will recalculate on the server
+        
+        // 1. Check if rate is outdated
+        try {
+          const checkResponse = await fetch(`/api/exchange-rates/check?currency=${selectedCurrency}`);
+          if (checkResponse.ok) {
+            const checkData = await checkResponse.json();
+            
+            // 2. If outdated, show skeleton and fetch fresh rates
+            if (checkData.outdated) {
+              console.log('Rate outdated, fetching updates...');
+              isUpdatingRates = true;
+              try {
+                await fetch('/api/exchange-rates/update', { method: 'POST' });
+              } finally {
+                isUpdatingRates = false;
+              }
+            }
+          } else {
+            console.warn('Failed to check rate status, proceeding without update');
+          }
+        } catch (checkError) {
+          console.error('Error checking rate status:', checkError);
+        }
+        
+        // 3. Call the parent's update function which will recalculate on the server
         // The parent will update data.settlements which this component receives as prop
         const result = await onUpdateCurrency(selectedCurrency);
         console.log('Update result:', result);
@@ -191,9 +216,14 @@
                 
                 <div class="flex items-center gap-2">
                   <div class="h-px w-8 bg-neutral-800 group-hover:bg-[#CB8E4C]/30 transition-colors"></div>
-                  <span class="text-[#CB8E4C] font-semibold text-sm tracking-wide">
-                    {selectedCurrency} {(settlement.amount / 100).toFixed(2)}
-                  </span>
+                  {#if isUpdatingRates}
+                    <!-- Skeleton loader for amount while rates are being updated -->
+                    <div class="h-4 w-16 bg-neutral-700 rounded animate-pulse"></div>
+                  {:else}
+                    <span class="text-[#CB8E4C] font-semibold text-sm tracking-wide">
+                      {selectedCurrency} {(settlement.amount / 100).toFixed(2)}
+                    </span>
+                  {/if}
                 </div>
               </div>
             {/each}
