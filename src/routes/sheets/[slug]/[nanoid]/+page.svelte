@@ -386,36 +386,48 @@
     <div>
       <label for="paidBy" class="block text-sm font-medium text-neutral-300 mb-1">Paid By</label>
       <div class="flex flex-wrap gap-2">
-        {#each data.participants as participant}
+        {#each data.participants as participant, index}
           <button
             type="button"
             onclick={() => formPaidBy = participant.id.toString()}
-            class={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
+            class={`group flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all duration-300 cursor-pointer ${
               formPaidBy === participant.id.toString()
-                ? 'border-[#CB8E4C] bg-[#CB8E4C]/10'
-                : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
+                ? 'border-[#CB8E4C] bg-[#CB8E4C]/15 shadow-lg shadow-[#CB8E4C]/5'
+                : 'border-neutral-700 bg-neutral-800/30 hover:border-neutral-600 hover:bg-neutral-800/50'
             }`}
+            style={`animation-delay: ${index * 50}ms`}
           >
-            <div class={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-              formPaidBy === participant.id.toString() ? 'bg-[#CB8E4C]' : 'bg-neutral-700'
+            <div class={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+              formPaidBy === participant.id.toString() 
+                ? 'bg-[#CB8E4C] shadow-lg shadow-[#CB8E4C]/30' 
+                : 'bg-neutral-700 group-hover:bg-neutral-600'
             }`}>
-              <span class={`text-xs font-medium ${formPaidBy === participant.id.toString() ? 'text-white' : 'text-neutral-300'}`}>
+              <span class={`text-xs font-medium transition-colors duration-300 ${
+                formPaidBy === participant.id.toString() ? 'text-white' : 'text-neutral-300'
+              }`}>
                 {participant.name.charAt(0).toUpperCase()}
               </span>
             </div>
-            <span class={`text-sm ${formPaidBy === participant.id.toString() ? 'text-white' : 'text-neutral-300'}`}>
+            <span class={`text-sm font-medium transition-colors duration-300 ${
+              formPaidBy === participant.id.toString() ? 'text-white' : 'text-neutral-300'
+            }`}>
               {participant.name}
             </span>
             {#if formPaidBy === participant.id.toString()}
-              <svg class="w-4 h-4 text-[#CB8E4C] ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
+              <div class="ml-1 flex items-center gap-1">
+                <svg class="w-4 h-4 text-[#CB8E4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
             {/if}
           </button>
         {/each}
       </div>
       <!-- Hidden input for form submission -->
       <input type="hidden" name="paidBy" value={formPaidBy} required />
+      {#if !formPaidBy}
+        <p class="text-xs text-neutral-500 mt-2">Select who paid for this expense</p>
+      {/if}
     </div>
 
     <div>
