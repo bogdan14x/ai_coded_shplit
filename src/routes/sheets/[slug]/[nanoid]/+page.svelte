@@ -395,30 +395,123 @@
     </div>
 
     <div>
-      <span class="block text-sm font-medium text-neutral-300 mb-2">Split Type</span>
-      <div class="flex gap-4" role="group" aria-label="Split Type">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            name="splitType"
-            value="equal"
-            bind:group={formSplitType}
-            class="text-[#CB8E4C] focus:ring-[#CB8E4C]"
-          />
-          <span class="text-neutral-300">Equal</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            name="splitType"
-            value="custom"
-            bind:group={formSplitType}
-            class="text-[#CB8E4C] focus:ring-[#CB8E4C]"
-          />
-          <span class="text-neutral-300">Custom</span>
-        </label>
+      <span class="block text-sm font-medium text-neutral-300 mb-3">Split Type</span>
+      <div class="grid grid-cols-2 gap-3" role="group" aria-label="Split Type">
+        <!-- Equal Split Button -->
+        <button
+          type="button"
+          onclick={() => formSplitType = 'equal'}
+          class={`relative p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+            formSplitType === 'equal' 
+              ? 'border-[#CB8E4C] bg-[#CB8E4C]/10' 
+              : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
+          }`}
+        >
+          <div class="flex items-center gap-3">
+            <div class={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              formSplitType === 'equal' ? 'bg-[#CB8E4C]' : 'bg-neutral-700'
+            }`}>
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </div>
+            <div class="text-left">
+              <div class={`font-medium ${formSplitType === 'equal' ? 'text-white' : 'text-neutral-300'}`}>
+                Equal Split
+              </div>
+              <div class="text-xs text-neutral-500">
+                {data.participants.length} participants × ${(formAmount ? parseFloat(formAmount) / data.participants.length : 0).toFixed(2)}
+              </div>
+            </div>
+          </div>
+          {#if formSplitType === 'equal'}
+            <div class="absolute -top-2 -right-2 w-5 h-5 bg-[#CB8E4C] rounded-full flex items-center justify-center">
+              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          {/if}
+        </button>
+
+        <!-- Custom Split Button -->
+        <button
+          type="button"
+          onclick={() => formSplitType = 'custom'}
+          class={`relative p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
+            formSplitType === 'custom' 
+              ? 'border-[#CB8E4C] bg-[#CB8E4C]/10' 
+              : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
+          }`}
+        >
+          <div class="flex items-center gap-3">
+            <div class={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              formSplitType === 'custom' ? 'bg-[#CB8E4C]' : 'bg-neutral-700'
+            }`}>
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+              </svg>
+            </div>
+            <div class="text-left">
+              <div class={`font-medium ${formSplitType === 'custom' ? 'text-white' : 'text-neutral-300'}`}>
+                Custom Split
+              </div>
+              <div class="text-xs text-neutral-500">
+                Set amounts per person
+              </div>
+            </div>
+          </div>
+          {#if formSplitType === 'custom'}
+            <div class="absolute -top-2 -right-2 w-5 h-5 bg-[#CB8E4C] rounded-full flex items-center justify-center">
+              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          {/if}
+        </button>
       </div>
     </div>
+
+    <!-- Equal Split Preview Table -->
+    {#if formSplitType === 'equal' && formAmount && parseFloat(formAmount) > 0}
+      <div class="mt-4 p-4 bg-neutral-900/50 rounded-xl border border-neutral-800">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Contribution Breakdown</span>
+          <span class="text-xs text-neutral-500">
+            {data.participants.length} ways
+          </span>
+        </div>
+        <div class="space-y-2">
+          {#each data.participants as participant}
+            {#if participant.id.toString() === formPaidBy}
+              <div class="flex items-center justify-between p-2 rounded-lg bg-[#CB8E4C]/10 border border-[#CB8E4C]/30">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-[#CB8E4C]"></div>
+                  <span class="text-sm text-white">{participant.name}</span>
+                  <span class="text-xs text-neutral-500">(paid)</span>
+                </div>
+                <span class="text-sm text-[#CB8E4C] font-medium">
+                  ${(parseFloat(formAmount) / data.participants.length).toFixed(2)}
+                </span>
+              </div>
+            {:else}
+              <div class="flex items-center justify-between p-2 rounded-lg bg-neutral-800/50">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-neutral-600"></div>
+                  <span class="text-sm text-neutral-300">{participant.name}</span>
+                </div>
+                <span class="text-sm text-neutral-400">
+                  ${(parseFloat(formAmount) / data.participants.length).toFixed(2)}
+                </span>
+              </div>
+            {/if}
+          {/each}
+        </div>
+        <div class="mt-3 pt-3 border-t border-neutral-800 flex justify-between items-center">
+          <span class="text-sm text-neutral-400">Total</span>
+          <span class="text-sm text-white font-medium">${formAmount}</span>
+        </div>
+      </div>
+    {/if}
 
     {#if form?.error}
       <p class="text-red-400 text-sm">{form.error}</p>
