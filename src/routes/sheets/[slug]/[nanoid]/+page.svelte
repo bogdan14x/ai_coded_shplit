@@ -385,18 +385,58 @@
 
     <div>
       <label for="paidBy" class="block text-sm font-medium text-neutral-300 mb-1">Paid By</label>
-      <select
-        id="paidBy"
-        name="paidBy"
-        required
-        bind:value={formPaidBy}
-        class="w-full px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
-      >
-        <option value="">Select who paid</option>
-        {#each data.participants as participant}
-          <option value={participant.id.toString()}>{participant.name}</option>
-        {/each}
-      </select>
+      <div class="relative">
+        <div class="flex items-center gap-2">
+          <div class="flex-1 relative">
+            <select
+              id="paidBy"
+              name="paidBy"
+              required
+              bind:value={formPaidBy}
+              class="w-full px-4 py-3 pl-12 rounded-xl border border-neutral-700 bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent appearance-none cursor-pointer"
+            >
+              <option value="">Select who paid</option>
+              {#each data.participants as participant}
+                <option value={participant.id.toString()}>{participant.name}</option>
+              {/each}
+            </select>
+            <!-- Custom dropdown arrow -->
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg class="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <!-- Participant avatar indicator -->
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-neutral-700 flex items-center justify-center">
+              {#if formPaidBy}
+                {#each data.participants as participant}
+                  {#if participant.id.toString() === formPaidBy}
+                    <span class="text-xs font-medium text-neutral-300">
+                      {participant.name.charAt(0).toUpperCase()}
+                    </span>
+                  {/if}
+                {/each}
+              {:else}
+                <svg class="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              {/if}
+            </div>
+          </div>
+          <!-- Selected participant name preview -->
+          {#if formPaidBy}
+            <div class="flex-shrink-0 px-3 py-2 bg-[#CB8E4C]/10 rounded-lg border border-[#CB8E4C]/30">
+              <span class="text-sm text-[#CB8E4C]">
+                {#each data.participants as participant}
+                  {#if participant.id.toString() === formPaidBy}
+                    {participant.name}
+                  {/if}
+                {/each}
+              </span>
+            </div>
+          {/if}
+        </div>
+      </div>
     </div>
 
     <div>
