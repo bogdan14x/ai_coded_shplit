@@ -248,6 +248,15 @@ export const actions: Actions = {
       .where(eq(sheets.id, sheet.id))
       .run();
 
-    return { success: true };
+    // Recalculate settlements with the new currency
+    const [participantsList, expensesList] = await Promise.all([
+      db.select().from(participants).where(eq(participants.sheetId, sheet.id)).all(),
+      db.select().from(expenses).where(eq(expenses.sheetId, sheet.id)).all(),
+    ]);
+
+    const { calculateSettlements } = await import('$lib/currency');
+    const { settlements } = await calculateSettlements(expensesList, participantsList, currency);
+
+    return { success: true, settlements, settlementCurrency: currency };
   }
 };

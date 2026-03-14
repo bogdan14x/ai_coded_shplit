@@ -1,13 +1,17 @@
 <script lang="ts">
   import { fade, scale } from 'svelte/transition';
   import { expoOut } from 'svelte/easing';
+  import { calculateSettlements } from '$lib/currency';
+  import type { Expense, Participant } from '$lib/db';
   
   let {
     isOpen = $bindable(),
     settlements = [] as Array<{ from: string; to: string; amount: number }>,
     settlementCurrency = 'USD',
     currencies = [] as Array<{ code: string; name: string; symbol: string }>,
-    onUpdateCurrency
+    onUpdateCurrency,
+    expenses = [] as Expense[],
+    participants = [] as Participant[]
   } = $props();
   
   // Currency list from exchange rates (base EUR)
@@ -61,9 +65,26 @@
     }
   }
   
-  function handleCurrencyChange() {
+  let isCalculating = $state(false);
+  let recalculatedSettlements = $state<Array<{ from: string; to: string; amount: number }>>([]);
+  
+  async function handleCurrencyChange() {
     if (onUpdateCurrency) {
-      onUpdateCurrency(selectedCurrency);
+      isCalculating = true;
+      try {
+        // Call the parent's update function which will recalculate on the server
+        // and return the new settlements
+        const result = await onUpdateCurrency(selectedCurrency);
+        
+        // If the parent returns updated settlements, use them
+        if (result && result.settlements) {
+          recalculatedSettlements = result.settlements;
+        }
+      } catch (error) {
+        console.error('Failed to recalculate settlements:', error);
+      } finally {
+        isCalculating = false;
+      }
     }
   }
 </script>
@@ -139,7 +160,16 @@
       
       <!-- Settlements List -->
       <div class="px-6 py-4 max-h-[60vh] overflow-y-auto">
-        {#if settlements.length === 0}
+        {#if isCalculating}
+          <div class="text-center py-8">
+            <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-neutral-900 flex items-center justify-center animate-spin">
+              <svg class="w-6 h-6 text-[#CB8E4C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+            <p class="text-neutral-500 text-sm">Calculating...</p>
+          </div>
+        {:else if (recalculatedSettlements.length > 0 ? recalculatedSettlements : settlements).length === 0}
           <div class="text-center py-8">
             <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-neutral-900 flex items-center justify-center">
               <svg class="w-6 h-6 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +180,7 @@
           </div>
         {:else}
           <div class="space-y-3">
-            {#each settlements as settlement, i (settlement.from + settlement.to)}
+            {#each (recalculatedSettlements.length > 0 ? recalculatedSettlements : settlements) as settlement, i (settlement.from + settlement.to)}
               <div 
                 class="group flex items-center justify-between p-4 bg-neutral-900/50 rounded-xl border border-neutral-800/50 hover:border-neutral-700 transition-all duration-300"
                 style="animation-delay: {i * 50}ms"
@@ -185,7 +215,7 @@
       <!-- Footer -->
       <div class="px-6 py-4 bg-neutral-950 border-t border-neutral-800">
         <p class="text-neutral-600 text-xs text-center">
-          Settlements calculated in {settlementCurrency}
+          Settlements calculated in {selectedCurrency}
         </p>
       </div>
     </div>

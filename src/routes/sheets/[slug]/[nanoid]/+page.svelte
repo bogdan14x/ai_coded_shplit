@@ -74,16 +74,26 @@
     settlementCurrency = data.sheet?.settlementCurrency || 'USD';
   });
   
-  // Update settlement currency on the server
+  // Update settlement currency on the server and refresh data
   async function updateSettlementCurrency(newCurrency?: string) {
     const currencyToUpdate = newCurrency || settlementCurrency;
     try {
-      await fetch(window.location.pathname + '?/updateSettlementCurrency', {
+      const response = await fetch(window.location.pathname + '?/updateSettlementCurrency', {
         method: 'POST',
         body: new URLSearchParams({ currency: currencyToUpdate })
       });
+      const result = await response.json();
+      
       // Update local state after successful server update
-      settlementCurrency = currencyToUpdate;
+      if (result.type === 'success' && result.data?.success) {
+        settlementCurrency = currencyToUpdate;
+        // Update settlements if returned by server
+        if (result.data.settlements) {
+          data.settlements = result.data.settlements;
+        }
+        // Return the updated settlements for the modal
+        return result.data;
+      }
     } catch (error) {
       console.error('Failed to update settlement currency:', error);
     }
@@ -631,4 +641,6 @@
   settlementCurrency={data.sheet?.settlementCurrency || 'USD'}
   currencies={currencies}
   onUpdateCurrency={updateSettlementCurrency}
+  expenses={data.expenses}
+  participants={data.participants}
 />
