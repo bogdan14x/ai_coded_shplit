@@ -62,6 +62,21 @@
   let formPaidBy = $state('');
   let formSplitType = $state('equal');
   let formCurrency = $state('USD');
+  
+  // Settlement currency state - initialize from sheet or default to USD
+  let settlementCurrency = $state((data.sheet as any)?.settlementCurrency || 'USD');
+  
+  // Update settlement currency on the server
+  async function updateSettlementCurrency() {
+    try {
+      await fetch(window.location.pathname + '?/updateSettlementCurrency', {
+        method: 'POST',
+        body: new URLSearchParams({ currency: settlementCurrency })
+      });
+    } catch (error) {
+      console.error('Failed to update settlement currency:', error);
+    }
+  }
 
   // Initialize local expenses from data
   $effect(() => {
@@ -173,6 +188,20 @@
       {:else}
         <p class="text-neutral-400 text-sm">No one has joined yet.</p>
       {/if}
+    </div>
+
+    <!-- Settlement Currency Section -->
+    <div class="mb-4 flex items-center gap-2">
+      <span class="text-neutral-400 text-sm">Settlement Currency:</span>
+      <select
+        bind:value={settlementCurrency}
+        onchange={updateSettlementCurrency}
+        class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-sm rounded-lg border border-neutral-700 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] cursor-pointer"
+      >
+        {#each currencies as currency}
+          <option value={currency.code}>{currency.code} - {currency.name}</option>
+        {/each}
+      </select>
     </div>
 
     <!-- Add Expense Section -->

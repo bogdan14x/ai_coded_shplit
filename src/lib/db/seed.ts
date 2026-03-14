@@ -13,6 +13,7 @@ db.insert(sheets).values({
   name: 'Trip to Italy 2025',
   description: 'Expenses for our amazing trip to Italy',
   currency: 'USD',
+  settlementCurrency: 'USD',
 }).run();
 
 const sheet = db.select().from(sheets).where(eq(sheets.slug, slug)).get();

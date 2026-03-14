@@ -196,5 +196,27 @@ export const actions: Actions = {
       success: true, 
       expenses: updatedExpenses 
     };
+  },
+
+  updateSettlementCurrency: async ({ request, params }) => {
+    const { slug, nanoid } = params;
+    const formData = await request.formData();
+
+    const currency = formData.get('currency')?.toString();
+    if (!currency) {
+      return { error: 'Currency is required' };
+    }
+
+    const sheet = await getSheetByParams(slug, nanoid);
+    if (!sheet) {
+      return { error: 'Sheet not found' };
+    }
+
+    await db.update(sheets)
+      .set({ settlementCurrency: currency })
+      .where(eq(sheets.id, sheet.id))
+      .run();
+
+    return { success: true };
   }
 };

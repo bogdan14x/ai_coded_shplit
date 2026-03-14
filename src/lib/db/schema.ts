@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
 export const sheets = sqliteTable('sheets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -7,9 +7,19 @@ export const sheets = sqliteTable('sheets', {
   name: text('name').notNull(),
   description: text('description'),
   currency: text('currency', { length: 3 }).default('USD'),
+  settlementCurrency: text('settlement_currency', { length: 3 }).default('USD'),
   createdBy: text('created_by'),
   createdAt: integer('created_at', { mode: 'timestamp' }).defaultNow(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).defaultNow(),
+});
+
+// Exchange rates table (base currency is always EUR)
+export const exchangeRates = sqliteTable('exchange_rates', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  baseCurrency: text('base_currency', { length: 3 }).notNull().default('EUR'),
+  targetCurrency: text('target_currency', { length: 3 }).notNull(),
+  rate: real('rate').notNull(),
+  date: integer('date', { mode: 'timestamp' }).notNull().defaultNow(),
 });
 
 export const participants = sqliteTable('participants', {
@@ -44,3 +54,4 @@ export const expenses = sqliteTable('expenses', {
 export type Sheet = typeof sheets.$inferSelect;
 export type Participant = typeof participants.$inferSelect;
 export type Expense = typeof expenses.$inferSelect;
+export type ExchangeRate = typeof exchangeRates.$inferSelect;
