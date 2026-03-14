@@ -11,6 +11,45 @@
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
+  // Currency list from exchange rates (base EUR)
+  const currencies = [
+    { code: 'EUR', name: 'Euro', symbol: '€' },
+    { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
+    { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
+    { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
+    { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' },
+    { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+    { code: 'CZK', name: 'Czech Koruna', symbol: 'Kč' },
+    { code: 'DKK', name: 'Danish Krone', symbol: 'kr' },
+    { code: 'GBP', name: 'British Pound', symbol: '£' },
+    { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
+    { code: 'HUF', name: 'Hungarian Forint', symbol: 'Ft' },
+    { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp' },
+    { code: 'ILS', name: 'Israeli Shekel', symbol: '₪' },
+    { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
+    { code: 'ISK', name: 'Icelandic Króna', symbol: 'kr' },
+    { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+    { code: 'KRW', name: 'South Korean Won', symbol: '₩' },
+    { code: 'MXN', name: 'Mexican Peso', symbol: 'MX$' },
+    { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' },
+    { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
+    { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
+    { code: 'PHP', name: 'Philippine Peso', symbol: '₱' },
+    { code: 'PLN', name: 'Polish Złoty', symbol: 'zł' },
+    { code: 'RON', name: 'Romanian Leu', symbol: 'lei' },
+    { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
+    { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
+    { code: 'THB', name: 'Thai Baht', symbol: '฿' },
+    { code: 'TRY', name: 'Turkish Lira', symbol: '₺' },
+    { code: 'USD', name: 'US Dollar', symbol: '$' },
+    { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
+  ];
+
+  // Get currency details by code
+  function getCurrencyByCode(code: string) {
+    return currencies.find(c => c.code === code);
+  }
+
   let isDrawerOpen = $state(false);
   let splitType = $state('equal');
   let editingExpenseId = $state<number | null>(null);
@@ -22,6 +61,7 @@
   let formAmount = $state('');
   let formPaidBy = $state('');
   let formSplitType = $state('equal');
+  let formCurrency = $state('USD');
 
   // Initialize local expenses from data
   $effect(() => {
@@ -35,6 +75,7 @@
     formDescription = '';
     formAmount = '';
     formPaidBy = '';
+    formCurrency = data.sheet?.currency || 'USD';
     isDrawerOpen = true;
   }
 
@@ -47,6 +88,7 @@
     formDescription = expense.description;
     formAmount = (expense.amount / 100).toFixed(2);
     formPaidBy = expense.paidBy.toString();
+    formCurrency = data.sheet?.currency || 'USD';
     
     // Force a microtask to ensure the form fields are updated before opening
     Promise.resolve().then(() => {
@@ -75,14 +117,15 @@
       if (expensesData && Array.isArray(expensesData)) {
         localExpenses = expensesData;
       }
-      isDrawerOpen = false;
-      // Reset editing state and form fields
-      editingExpenseId = null;
-      editingExpense = null;
-      formDescription = '';
-      formAmount = '';
-      formPaidBy = '';
-      formSplitType = 'equal';
+        isDrawerOpen = false;
+        // Reset editing state and form fields
+        editingExpenseId = null;
+        editingExpense = null;
+        formDescription = '';
+        formAmount = '';
+        formPaidBy = '';
+        formSplitType = 'equal';
+        formCurrency = data.sheet?.currency || 'USD';
     }
   }
 
@@ -267,30 +310,42 @@
 
     <div>
       <label for="amount" class="block text-sm font-medium text-neutral-300 mb-1">Amount</label>
-      <div class="flex gap-3">
-        <select
+      <input
+        type="number"
+        id="amount"
+        name="amount"
+        required
+        min="0"
+        step="0.01"
+        bind:value={formAmount}
+        class="w-full px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
+        placeholder="0.00"
+      />
+    </div>
+
+    <div>
+      <label for="currency" class="block text-sm font-medium text-neutral-300 mb-1">Currency</label>
+      <div class="relative">
+        <input
+          type="text"
           id="currency"
           name="currency"
-          class="w-24 px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
-        >
-          <option value="USD">USD</option>
-          <option value="EUR">EUR</option>
-          <option value="GBP">GBP</option>
-          <option value="JPY">JPY</option>
-          <option value="CAD">CAD</option>
-          <option value="AUD">AUD</option>
-        </select>
-        <input
-          type="number"
-          id="amount"
-          name="amount"
-          required
-          min="0"
-          step="0.01"
-          bind:value={formAmount}
-          class="flex-1 px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
-          placeholder="0.00"
+          bind:value={formCurrency}
+          class="w-full px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[#CB8E4C] focus:border-transparent"
+          placeholder="Search currency..."
+          autocomplete="off"
+          list="currency-list"
         />
+        <datalist id="currency-list">
+          {#each currencies as currency}
+            <option value={currency.code}>{currency.name}</option>
+          {/each}
+        </datalist>
+        {#if getCurrencyByCode(formCurrency)}
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 text-sm pointer-events-none">
+            {getCurrencyByCode(formCurrency)?.symbol}
+          </div>
+        {/if}
       </div>
     </div>
 

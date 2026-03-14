@@ -10,6 +10,7 @@ async function validateExpenseForm(formData: FormData, sheetId: number) {
   const amountStr = formData.get('amount')?.toString();
   const paidByStr = formData.get('paidBy')?.toString();
   const splitType = formData.get('splitType')?.toString();
+  const currency = formData.get('currency')?.toString() || 'USD';
 
   if (!description || !amountStr || !paidByStr) {
     return { error: 'All fields are required' };
@@ -33,7 +34,13 @@ async function validateExpenseForm(formData: FormData, sheetId: number) {
     return { error: 'Invalid participant for this sheet' };
   }
 
-  return { description, amount, paidBy, splitType };
+  // Validate currency
+  const validCurrencies = ['EUR', 'AUD', 'BRL', 'CAD', 'CHF', 'CNY', 'CZK', 'DKK', 'GBP', 'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'ISK', 'JPY', 'KRW', 'MXN', 'MYR', 'NOK', 'NZD', 'PHP', 'PLN', 'RON', 'SEK', 'SGD', 'THB', 'TRY', 'USD', 'ZAR'];
+  if (!validCurrencies.includes(currency.toUpperCase())) {
+    return { error: 'Invalid currency' };
+  }
+
+  return { description, amount, paidBy, splitType, currency: currency.toUpperCase() };
 }
 
 // Helper function to get sheet by params
@@ -91,6 +98,7 @@ export const actions: Actions = {
       paidBy: validation.paidBy,
       description: validation.description,
       amount: validation.amount,
+      currency: validation.currency,
       splitType: validation.splitType === 'custom' ? 'custom' : 'equal',
     }).run();
 
@@ -139,6 +147,7 @@ export const actions: Actions = {
         paidBy: validation.paidBy,
         description: validation.description,
         amount: validation.amount,
+        currency: validation.currency,
         splitType: validation.splitType === 'custom' ? 'custom' : 'equal',
       })
       .where(eq(expenses.id, expenseId))

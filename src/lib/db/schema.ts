@@ -35,6 +35,7 @@ export const expenses = sqliteTable('expenses', {
     .notNull(),
   description: text('description').notNull(),
   amount: integer('amount').notNull(),
+  currency: text('currency', { length: 3 }).default('USD'),
   splitType: text('split_type', { enum: ['equal', 'custom'] }).notNull().default('equal'),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().defaultNow(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().defaultNow(),

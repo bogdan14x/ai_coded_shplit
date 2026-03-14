@@ -32,6 +32,7 @@ if (sheet) {
       paidBy: participantsList[0].id,
       description: 'Hotel in Rome',
       amount: 50000,
+      currency: 'USD',
       splitType: 'equal',
     },
     {
@@ -39,6 +40,7 @@ if (sheet) {
       paidBy: participantsList[1].id,
       description: 'Train tickets',
       amount: 12000,
+      currency: 'USD',
       splitType: 'equal',
     },
     {
@@ -46,6 +48,7 @@ if (sheet) {
       paidBy: participantsList[2].id,
       description: 'Dinner at restaurant',
       amount: 8500,
+      currency: 'USD',
       splitType: 'equal',
     },
   ]).run();

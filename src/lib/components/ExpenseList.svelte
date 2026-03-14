@@ -8,11 +8,19 @@
     return participant?.name || 'Unknown';
   }
 
-  function formatAmount(cents: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(cents / 100);
+  function formatAmount(cents: number, currency: string = 'USD'): string {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency,
+      }).format(cents / 100);
+    } catch {
+      // Fallback if currency is not supported
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(cents / 100);
+    }
   }
 
   function handleEdit(expense: Expense) {
@@ -47,7 +55,7 @@
                 Paid by {getParticipantName(expense.paidBy)}
               </p>
             </div>
-            <span class="font-semibold text-[#CB8E4C] text-lg">{formatAmount(expense.amount)}</span>
+            <span class="font-semibold text-[#CB8E4C] text-lg">{formatAmount(expense.amount, expense.currency || 'USD')}</span>
           </button>
         </li>
       {/each}
