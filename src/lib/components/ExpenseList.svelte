@@ -121,7 +121,21 @@
                 <span class="w-2 h-2 bg-[#CB8E4C] rounded-full"></span>
                 Paid by {getParticipantName(expense.paidBy)}
                 <span class="text-neutral-600">•</span>
-                <span class="text-neutral-500 text-xs uppercase">{expense.splitType || 'equal'}</span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+                  {expense.splitType === 'custom' 
+                    ? 'bg-[#CB8E4C]/15 text-[#CB8E4C] border border-[#CB8E4C]/30' 
+                    : 'bg-neutral-700/50 text-neutral-300 border border-neutral-600/50'}">
+                  {#if expense.splitType === 'custom'}
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  {:else}
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  {/if}
+                  <span class="uppercase tracking-wide">{expense.splitType || 'equal'}</span>
+                </span>
               </p>
             </div>
             <div class="flex flex-col items-end">
