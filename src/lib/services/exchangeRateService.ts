@@ -17,7 +17,7 @@ export async function fetchAndStoreRates(baseCurrency: string = BASE_CURRENCY) {
     const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
 
     // Use a transaction for atomic updates
-    await db.transaction(async (tx) => {
+    await db.transaction(async (tx: any) => {
         for (const [target, rate] of Object.entries(rates)) {
             await tx.insert(exchangeRates)
                 .values({
@@ -65,7 +65,7 @@ export async function getOutdatedCurrencies(): Promise<string[]> {
         .where(lt(exchangeRates.lastUpdated, cutoffTime))
         .groupBy(exchangeRates.targetCurrency);
     
-    return results.map(r => r.targetCurrency);
+    return results.map((r: any) => r.targetCurrency);
 }
 
 // Fetch rates for multiple base currencies

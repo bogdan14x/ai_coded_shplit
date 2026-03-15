@@ -67,7 +67,7 @@ if (sheet) {
       // Create custom split data
       const customSplit: Record<number, number> = {};
       let remaining = amount;
-      participantsList.forEach((p, idx) => {
+      participantsList.forEach((p: any, idx: number) => {
         if (idx === participantsList.length - 1) {
           customSplit[p.id] = remaining;
         } else {

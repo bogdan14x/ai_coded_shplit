@@ -14,7 +14,12 @@
 		"test:watch": "vitest",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
-		"test:e2e:headed": "playwright test --headed"
+		"test:e2e:headed": "playwright test --headed",
+		"d1:migrate": "wrangler d1 execute shibasplit --local --file ./drizzle/0001_*.sql",
+		"d1:create": "wrangler d1 create shibasplit",
+		"d1:seed": "tsx scripts/seed-d1.ts",
+		"db:generate": "drizzle-kit generate --config drizzle.config.d1.ts",
+		"db:push": "drizzle-kit push --config drizzle.config.d1.ts"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.58.2",

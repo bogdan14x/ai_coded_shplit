@@ -40,7 +40,7 @@ describe('Sheet Page Actions', () => {
     ]).run();
 
     const participantsList = db.select().from(participants).where(eq(participants.sheetId, sheet.id)).all();
-    participantIds = participantsList.map(p => p.id);
+    participantIds = participantsList.map((p: any) => p.id);
 
     const result = db.insert(expenses).values({
       sheetId: sheet.id,

@@ -1,0 +1,18 @@
+# Cloudflare Workers + D1 configuration
+
+name = "shibasplit"
+main = "src/worker.ts"
+compatibility_date = "2026-03-15"
+
+# D1 Database configuration
+[[d1_databases]]
+binding = "DB" # used in worker code
+database_name = "shibasplit"
+database_id = "dev" # change to actual database ID when deploying to production
+
+# Environment variables for local development
+[env.development]
+name = "shibasplit-dev"
+
+[env.production]
+name = "shibasplit"

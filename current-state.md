@@ -57,6 +57,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 24. **Invite Button Styling**: Updated copy invite link button to match SettleUp button styling, inline with participants list and right aligned.
 25. **Currency Display Enhancement**: Improved expense price display with tabular figures, larger readable typography, and distinct visual hierarchy.
 26. **Split Type Badge Design**: Enhanced split type display with custom badges featuring icons, color coding, and refined typography instead of plain uppercase text.
+27. **Cloudflare D1 Integration**: Added support for Cloudflare D1 SQL database with Wrangler CLI for production deployment.
 
 ### Server-Side Logic
 14. **Data Loading**: Created `+page.server.ts` to load data from database using Drizzle ORM queries.
