@@ -23,6 +23,12 @@ html, body {
   color: var(--color-neutral-300);
 }
 
+/* Tabular figures for currency numbers */
+.font-tabular {
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

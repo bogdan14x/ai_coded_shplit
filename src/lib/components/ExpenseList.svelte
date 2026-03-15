@@ -20,16 +20,10 @@
 
   function formatAmount(cents: number, currency: string = 'USD'): string {
     try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency,
-      }).format(cents / 100);
+      const amount = (cents / 100).toFixed(2);
+      return amount;
     } catch {
-      // Fallback if currency is not supported
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-      }).format(cents / 100);
+      return (cents / 100).toFixed(2);
     }
   }
 
@@ -130,7 +124,15 @@
                 <span class="text-neutral-500 text-xs uppercase">{expense.splitType || 'equal'}</span>
               </p>
             </div>
-            <span class="font-semibold text-[#CB8E4C] text-lg">{formatAmount(expense.amount, expense.currency || 'USD')}</span>
+            <div class="flex flex-col items-end">
+              {#if expense.currency && expense.currency !== 'USD'}
+                <span class="text-xs text-neutral-500 uppercase tracking-wider">{expense.currency}</span>
+              {/if}
+              <div class="flex items-baseline gap-0.5 font-tabular font-semibold">
+                <span class="text-[#CB8E4C] text-lg opacity-80">$</span>
+                <span class="text-white text-xl tracking-tight">{formatAmount(expense.amount, expense.currency || 'USD')}</span>
+              </div>
+            </div>
           </button>
         </li>
       {/each}
