@@ -1,5 +1,5 @@
 <script lang="ts">
-import { enhance } from '$app/forms';
+import { enhance, deserialize } from '$app/forms';
 import { onMount } from 'svelte';
 import SheetHeader from '$lib/components/SheetHeader.svelte';
 import ExpenseList from '$lib/components/ExpenseList.svelte';
@@ -99,28 +99,32 @@ import type { PageData, ActionData } from './$types';
   // Update settlement currency on the server and refresh data
   async function updateSettlementCurrency(newCurrency?: string) {
     const currencyToUpdate = newCurrency || settlementCurrency;
-    console.log('Updating settlement currency to:', currencyToUpdate);
     
     try {
-      const response = await fetch(window.location.pathname + '?/updateSettlementCurrency', {
+      const response = await fetch(`${window.location.pathname}?/updateSettlementCurrency`, {
         method: 'POST',
-        body: new URLSearchParams({ currency: currencyToUpdate })
+        body: new URLSearchParams({ currency: currencyToUpdate }),
+        headers: {
+          'x-sveltekit-action': 'true'
+        }
       });
       
-      // SvelteKit form actions return the action's return value directly when using fetch
-      const result = await response.json();
-      console.log('Server response:', result);
+      // Use SvelteKit's deserialize function to properly handle the response
+      const result = deserialize(await response.text());
       
-      // Update local state after successful server update
-      if (result.success) {
+      // Check if the result is successful
+      if (result.type === 'success') {
         settlementCurrency = currencyToUpdate;
+        
         // Update settlements if returned by server
-        if (result.settlements) {
-          console.log('Updating settlements with:', result.settlements);
-          settlementsState = result.settlements;
-          // Also return for modal to use
-          return { settlements: result.settlements };
+        if (result.data?.settlements) {
+          settlementsState = result.data.settlements;
+          
+          // Return the settlements for the SettlementModal component
+          return { settlements: result.data.settlements };
         }
+      } else {
+        console.error('Form action failed:', result);
       }
     } catch (error) {
       console.error('Failed to update settlement currency:', error);
@@ -133,6 +137,13 @@ import type { PageData, ActionData } from './$types';
   // Initialize local expenses from data
   $effect(() => {
     localExpenses = data.expenses;
+  });
+
+  // Sync settlementsState when data changes (e.g., after navigation or reload)
+  $effect(() => {
+    if (data.settlements) {
+      settlementsState = data.settlements;
+    }
   });
 
   function openAddDrawer() {
@@ -272,7 +283,6 @@ import type { PageData, ActionData } from './$types';
           <!-- Settlements Button -->
           <SettleUpButton 
             settlements={settlementsState} 
-            settlementCurrency={settlementCurrency}
             onOpenModal={() => isSettlementModalOpen = true}
           />
         </div>
@@ -670,6 +680,5 @@ import type { PageData, ActionData } from './$types';
   bind:isOpen={isSettlementModalOpen}
   settlements={settlementsState}
   settlementCurrency={settlementCurrency}
-  currencies={currencies}
   onUpdateCurrency={updateSettlementCurrency}
 />

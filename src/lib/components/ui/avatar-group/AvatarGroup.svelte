@@ -1,7 +1,7 @@
 <script lang="ts">
-  let { class: className = '', children, ...rest } = $props();
+  let { class: className = '', children } = $props();
 </script>
 
-<div class="flex -space-x-1 overflow-hidden {className}" {...rest}>
+<div class="flex -space-x-1 overflow-hidden {className}">
   {@render children()}
 </div>

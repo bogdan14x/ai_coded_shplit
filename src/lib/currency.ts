@@ -28,19 +28,30 @@ export async function getExchangeRate(baseCurrency: string, targetCurrency: stri
   // If not found, try to calculate via EUR as intermediary
   // This assumes we have rates from EUR to all currencies
   if (baseCurrency !== 'EUR') {
-    const baseToEur = await db.select()
+    // Fetch rate from EUR to baseCurrency (e.g., EUR->USD)
+    const eurToBase = await db.select()
       .from(exchangeRates)
       .where(eq(exchangeRates.targetCurrency, baseCurrency))
       .get();
     
-    const eurToTarget = await db.select()
-      .from(exchangeRates)
-      .where(eq(exchangeRates.targetCurrency, targetCurrency))
-      .get();
+    if (eurToBase) {
+      // If converting TO EUR (e.g., USD->EUR)
+      if (targetCurrency === 'EUR') {
+        // USD->EUR = 1 / (EUR->USD)
+        return 1 / eurToBase.rate;
+      }
+      
+      // If converting between two non-EUR currencies (e.g., USD->RON)
+      // We need EUR->RON rate
+      const eurToTarget = await db.select()
+        .from(exchangeRates)
+        .where(eq(exchangeRates.targetCurrency, targetCurrency))
+        .get();
 
-    if (baseToEur && eurToTarget) {
-      // Rate from base to target = (1 / baseToEur.rate) * eurToTarget.rate
-      return (1 / baseToEur.rate) * eurToTarget.rate;
+      if (eurToTarget) {
+        // USD->RON = (1 / EUR->USD) * EUR->RON
+        return (1 / eurToBase.rate) * eurToTarget.rate;
+      }
     }
   }
 

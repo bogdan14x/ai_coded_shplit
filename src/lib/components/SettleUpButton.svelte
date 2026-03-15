@@ -2,7 +2,6 @@
   let { 
     disabled = false, 
     settlements = [] as Array<{ from: string; to: string; amount: number }>,
-    settlementCurrency = 'USD',
     onOpenModal
   } = $props();
 </script>

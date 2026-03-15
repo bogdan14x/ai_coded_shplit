@@ -6,9 +6,16 @@
     isOpen = $bindable(),
     settlements = [] as Array<{ from: string; to: string; amount: number }>,
     settlementCurrency = 'USD',
-    currencies = [] as Array<{ code: string; name: string; symbol: string }>,
     onUpdateCurrency
   } = $props();
+  
+  // Local state for settlements that can be updated when currency changes
+  let localSettlements = $state(settlements);
+  
+  // Sync localSettlements when prop changes (modal reopens with new data)
+  $effect.pre(() => {
+    localSettlements = settlements;
+  });
   
   // Currency list from exchange rates (base EUR)
   const localCurrencies = [
@@ -66,6 +73,7 @@
       isCalculating = true;
       try {
         console.log('Currency changed to:', selectedCurrency);
+        console.log('Current localSettlements before update:', localSettlements);
         
         // 1. Check if rate is outdated
         try {
@@ -94,6 +102,14 @@
         // The parent will update data.settlements which this component receives as prop
         const result = await onUpdateCurrency(selectedCurrency);
         console.log('Update result:', result);
+        console.log('Result settlements:', result.settlements);
+        
+        // Update local settlements with the converted amounts from server
+        if (result.settlements) {
+          console.log('Updating localSettlements from', localSettlements, 'to', result.settlements);
+          localSettlements = result.settlements;
+          console.log('localSettlements after update:', localSettlements);
+        }
       } catch (error) {
         console.error('Failed to recalculate settlements:', error);
       } finally {
@@ -183,7 +199,7 @@
             </div>
             <p class="text-neutral-500 text-sm">Calculating...</p>
           </div>
-        {:else if settlements.length === 0}
+        {:else if localSettlements.length === 0}
           <div class="text-center py-8">
             <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-neutral-900 flex items-center justify-center">
               <svg class="w-6 h-6 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,7 +210,7 @@
           </div>
         {:else}
           <div class="space-y-3">
-            {#each settlements as settlement, i (settlement.from + settlement.to)}
+            {#each localSettlements as settlement, i (settlement.from + settlement.to)}
               <div 
                 class="group flex items-center justify-between p-4 bg-neutral-900/50 rounded-xl border border-neutral-800/50 hover:border-neutral-700 transition-all duration-300"
                 style="animation-delay: {i * 50}ms"
@@ -221,7 +237,7 @@
                     <div class="h-4 w-16 bg-neutral-700 rounded animate-pulse"></div>
                   {:else}
                     <span class="text-[#CB8E4C] font-semibold text-sm tracking-wide">
-                      {selectedCurrency} {(settlement.amount / 100).toFixed(2)}
+                      {localCurrencies.find(c => c.code === selectedCurrency)?.symbol || selectedCurrency} {(settlement.amount / 100).toFixed(2)}
                     </span>
                   {/if}
                 </div>
@@ -234,7 +250,7 @@
       <!-- Footer -->
       <div class="px-6 py-4 bg-neutral-950 border-t border-neutral-800">
         <p class="text-neutral-600 text-xs text-center">
-          Settlements calculated in {selectedCurrency}
+          Settlements calculated in {localCurrencies.find(c => c.code === selectedCurrency)?.symbol || selectedCurrency}
         </p>
       </div>
     </div>

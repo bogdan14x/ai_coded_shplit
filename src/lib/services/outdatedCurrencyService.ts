@@ -4,6 +4,9 @@ import {
   isRateOutdated,
   getOutdatedCurrencies,
 } from './exchangeRateService';
+import { db } from '$lib/db';
+import { exchangeRates } from '$lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * Get all currencies in the database that have outdated rates (>24h old)
@@ -53,12 +56,29 @@ export async function updateCurrencyRates(
 export async function updateOutdatedRatesInBackground(): Promise<void> {
   try {
     const outdated = await getAllOutdatedCurrencies();
+    
+    // Check if database is empty (no rates at all)
+    let isDbEmpty = false;
     if (outdated.length === 0) {
+      try {
+        const existingRate = await db.select()
+          .from(exchangeRates)
+          .where(eq(exchangeRates.targetCurrency, 'USD'))
+          .get();
+        isDbEmpty = !existingRate;
+      } catch (e) {
+        // If we can't check, assume not empty to avoid unnecessary fetches
+        isDbEmpty = false;
+      }
+    }
+
+    if (outdated.length === 0 && !isDbEmpty) {
       console.log('No outdated currencies to update');
       return;
     }
     
-    console.log(`Updating ${outdated.length} outdated currencies...`);
+    const message = isDbEmpty ? 'Database empty, fetching initial rates...' : `Updating ${outdated.length} outdated currencies...`;
+    console.log(message);
     
     // Update all common base currencies to ensure comprehensive coverage
     await fetchAndStoreRatesForMultipleBases(['EUR', 'USD', 'GBP']);

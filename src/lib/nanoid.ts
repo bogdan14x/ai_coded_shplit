@@ -1,4 +1,4 @@
-import { nanoid, customAlphabet } from 'nanoid';
+import { customAlphabet } from 'nanoid';
 
 const MIN_NANOID_LENGTH = 10;
 
