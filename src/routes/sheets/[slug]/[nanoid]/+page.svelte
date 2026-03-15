@@ -7,6 +7,7 @@ import SettleUpButton from '$lib/components/SettleUpButton.svelte';
 import SettlementModal from '$lib/components/SettlementModal.svelte';
 import Drawer from '$lib/components/Drawer.svelte';
 import Logo from '$lib/components/Logo.svelte';
+import CustomSplitEditor from '$lib/components/CustomSplitEditor.svelte';
 import { Root as AvatarGroup, Item as AvatarGroupItem } from '$lib/components/ui/avatar-group';
 import type { Sheet, Participant, Expense } from '$lib/db';
 import type { PageData, ActionData } from './$types';
@@ -70,6 +71,7 @@ import type { PageData, ActionData } from './$types';
   let formSplitType = $state('equal');
   let formCurrency = $state('USD');
   let customSplitAmounts = $state<Record<number, string>>({}); // participantId -> amount string
+  let formSubmitted = $state(false); // Track if form has been submitted
   
   // Settlement currency state - initialize from sheet or default to USD
   let settlementCurrency = $state(data.sheet?.settlementCurrency || 'USD');
@@ -240,29 +242,31 @@ import type { PageData, ActionData } from './$types';
 
 <main class="max-w-2xl mx-auto px-4 py-6 min-h-screen bg-neutral-950 text-neutral-300">
   {#if data.sheet}
-    <SheetHeader title={data.sheet.name} description={data.sheet.description || ''} onCopyInvite={copyToClipboard} />
-
-    <!-- Participants Avatar Group -->
-    <div class="mb-4 flex items-center gap-2">
-      {#if data.participants.length > 0}
-        <AvatarGroup>
-          {#each data.participants.slice(0, 5) as participant (participant.id)}
-            <AvatarGroupItem>
-              {participant.name.charAt(0).toUpperCase()}
-            </AvatarGroupItem>
-          {/each}
-          {#if data.participants.length > 5}
-            <AvatarGroupItem class="bg-neutral-700 text-neutral-300 text-xs">
-              +{data.participants.length - 5}
-            </AvatarGroupItem>
-          {/if}
-        </AvatarGroup>
-        <span class="text-neutral-400 text-sm">
-          {data.participants.length} participant{data.participants.length !== 1 ? 's' : ''}
-        </span>
-      {:else}
-        <p class="text-neutral-400 text-sm">No one has joined yet.</p>
-      {/if}
+    <div class="mb-6">
+      <SheetHeader title={data.sheet.name} description={data.sheet.description || ''} onCopyInvite={copyToClipboard} />
+      
+      <!-- Participants Avatar Group - inline below header -->
+      <div class="flex items-center gap-2 mt-2">
+        {#if data.participants.length > 0}
+          <AvatarGroup>
+            {#each data.participants.slice(0, 5) as participant (participant.id)}
+              <AvatarGroupItem>
+                {participant.name.charAt(0).toUpperCase()}
+              </AvatarGroupItem>
+            {/each}
+            {#if data.participants.length > 5}
+              <AvatarGroupItem class="bg-neutral-700 text-neutral-300 text-xs">
+                +{data.participants.length - 5}
+              </AvatarGroupItem>
+            {/if}
+          </AvatarGroup>
+          <span class="text-neutral-400 text-sm">
+            {data.participants.length} participant{data.participants.length !== 1 ? 's' : ''}
+          </span>
+        {:else}
+          <p class="text-neutral-400 text-sm">No one has joined yet.</p>
+        {/if}
+      </div>
     </div>
 
     <!-- Action Buttons Section -->
@@ -298,12 +302,6 @@ import type { PageData, ActionData } from './$types';
               value={getShareUrl()}
               class="flex-1 px-4 py-3 rounded-xl border border-neutral-700 bg-neutral-800 text-white text-sm focus:outline-none"
             />
-            <button
-              onclick={copyToClipboard}
-              class="px-4 py-3 bg-[#CB8E4C] hover:bg-[#B87D3D] text-white font-semibold rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center min-w-[100px] text-sm leading-none cursor-pointer"
-            >
-              Copy
-            </button>
           </div>
         </div>
       {/if}
@@ -382,10 +380,18 @@ import type { PageData, ActionData } from './$types';
           formAmount = '';
           formPaidBy = '';
           formSplitType = 'equal';
+          formSubmitted = false;
         }
       };
     }}
-    class="space-y-4">
+    class="space-y-4"
+    onsubmit={() => {
+      formSubmitted = true;
+      // Prevent submission if Paid By is not selected
+      if (!formPaidBy) {
+        return false;
+      }
+    }}>
     {#if editingExpenseId}
       <input type="hidden" name="expenseId" value={editingExpenseId} />
     {/if}
@@ -492,7 +498,9 @@ import type { PageData, ActionData } from './$types';
       <!-- Hidden input for form submission -->
       <input type="hidden" name="paidBy" value={formPaidBy} required />
       {#if !formPaidBy}
-        <p class="text-xs text-neutral-500 mt-2">Select who paid for this expense</p>
+        <p class={`text-xs mt-2 ${formSubmitted ? 'text-red-400' : 'text-neutral-500'}`}>
+          {formSubmitted ? 'Please select who paid for this expense' : 'Select who paid for this expense'}
+        </p>
       {/if}
     </div>
 
@@ -573,42 +581,30 @@ import type { PageData, ActionData } from './$types';
       </div>
     </div>
 
-    <!-- Custom Split Inputs -->
+    <!-- Custom Split Editor Component -->
     {#if formSplitType === 'custom'}
-      <div class="mt-4 space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Amounts per person</span>
-          <span class="text-xs text-neutral-500">Total: {formCurrency} {formAmount || '0.00'}</span>
-        </div>
-        {#each data.participants as participant}
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs text-neutral-300">
-              {participant.name.charAt(0).toUpperCase()}
-            </div>
-            <span class="text-sm text-neutral-300 w-24 truncate">{participant.name}</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              bind:value={customSplitAmounts[participant.id]}
-              class="flex-1 px-3 py-2 rounded-lg border border-neutral-700 bg-neutral-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#CB8E4C]"
-              placeholder="0.00"
-            />
-          </div>
-        {/each}
+      <div class="mt-4">
+        <CustomSplitEditor
+          bind:totalAmount={formAmount}
+          participants={data.participants}
+          initialSplitData={customSplitAmounts}
+          onUpdate={(newSplitData) => {
+            customSplitAmounts = newSplitData;
+          }}
+        />
       </div>
     {/if}
-    
+
     <!-- Hidden input for custom split data -->
     <input type="hidden" name="customSplitData" value={JSON.stringify(customSplitAmounts)} />
 
-    <!-- Split Preview Table -->
-    {#if formAmount && parseFloat(formAmount) > 0}
+    <!-- Split Preview Table (Kept for Equal Split, Hidden for Custom) -->
+    {#if formSplitType === 'equal' && formAmount && parseFloat(formAmount) > 0}
       <div class="mt-4 p-4 bg-neutral-900/50 rounded-xl border border-neutral-800">
         <div class="flex items-center justify-between mb-3">
           <span class="text-xs font-medium text-neutral-400 uppercase tracking-wider">Contribution Breakdown</span>
           <span class="text-xs text-neutral-500">
-            {formSplitType === 'equal' ? `${data.participants.length} ways` : 'Custom'}
+            {data.participants.length} ways
           </span>
         </div>
         <div class="space-y-2">
@@ -621,9 +617,7 @@ import type { PageData, ActionData } from './$types';
                   <span class="text-xs text-neutral-500">(paid)</span>
                 </div>
                 <span class="text-sm text-[#CB8E4C] font-medium">
-                  {formSplitType === 'equal' 
-                    ? (parseFloat(formAmount) / data.participants.length).toFixed(2)
-                    : (customSplitAmounts[participant.id] || '0.00')}
+                  {(parseFloat(formAmount) / data.participants.length).toFixed(2)}
                 </span>
               </div>
             {:else}
@@ -633,9 +627,7 @@ import type { PageData, ActionData } from './$types';
                   <span class="text-sm text-neutral-300">{participant.name}</span>
                 </div>
                 <span class="text-sm text-neutral-400">
-                  {formSplitType === 'equal' 
-                    ? (parseFloat(formAmount) / data.participants.length).toFixed(2)
-                    : (customSplitAmounts[participant.id] || '0.00')}
+                  {(parseFloat(formAmount) / data.participants.length).toFixed(2)}
                 </span>
               </div>
             {/if}
