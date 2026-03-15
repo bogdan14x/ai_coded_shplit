@@ -12,31 +12,45 @@
 </script>
 
 <header class="sheet-header mb-4 slide-up">
-  <div class="flex items-center justify-between gap-4">
-    <!-- Title and description (left aligned) -->
-    <div>
-      <h1 class="text-3xl font-display font-bold tracking-tight text-white">{title}</h1>
-      {#if description}
-        <p class="text-neutral-400 mt-1 text-lg">{description}</p>
-      {/if}
-    </div>
-    
-    <!-- Copy Invite Link Button - Pill shape with border, inline, right aligned -->
-    <button
-      onclick={handleCopy}
-      class="px-4 py-2 border-2 border-[#CB8E4C] text-white hover:bg-[#CB8E4C] text-xs font-medium rounded-full transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer flex-shrink-0"
-    >
-      {#if copySuccess}
-        <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        <span class="text-green-500">Copied!</span>
-      {:else}
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-        </svg>
-        <span>Copy Invite Link</span>
-      {/if}
-    </button>
+  <!-- Title and description (left aligned) -->
+  <div>
+    <h1 class="text-3xl font-display font-bold tracking-tight text-white">{title}</h1>
+    {#if description}
+      <p class="text-neutral-400 mt-1 text-lg">{description}</p>
+    {/if}
   </div>
 </header>
+
+<style>
+  /* Share button styling */
+  .share-button {
+    position: relative;
+    padding: 12px 20px;
+    background-color: #0a0a0a;
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: 1px solid #3f3f46;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .share-button:hover {
+    background-color: #1a1a1a;
+    border-color: #52525b;
+  }
+  
+  .share-button svg {
+    width: 16px;
+    height: 16px;
+    color: #CB8E4C;
+  }
+  
+  .share-button .success-icon {
+    color: #22c55e;
+  }
+</style>
