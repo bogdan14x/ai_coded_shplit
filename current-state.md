@@ -33,6 +33,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 4.  **Database Initialization**: Created `drizzle.config.ts` and ran `drizzle-kit push` to create database tables.
 5.  **Database Seeding**: Executed `src/lib/db/seed.ts` to populate the database with sample data.
 6.  **Exchange Rates**: Added exchange rates table with 30 currencies and seeded with data from exchange API.
+7.  **500 Expense Seeding**: Created `src/lib/db/seed-500-expenses.ts` to seed database with 500 test expenses for performance testing.
 
 ### Frontend & UI
 6.  **Svelte 5 Migration**: Updated all components to use Svelte 5 runes (`$props`, `$state`, `$bindable`).
@@ -49,6 +50,10 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 17. **Currency Picker**: Created searchable currency selector with 30 currencies and symbol display.
 18. **Delete Expense Functionality**: Added delete button with trash icon in expense drawer.
 19. **Refined Settlements UI**: Redesigned SettleUpButton with black background and amber accent border; moved to top action row; created centered modal with subtle gradients, smooth animations, and integrated currency selector.
+20. **Full-Screen Drawer**: Updated Drawer component to full-screen height for better mobile experience.
+21. **Expense Pagination**: Added pagination to ExpenseList component showing 50 expenses per page with client-side navigation.
+22. **Paid By Validation**: Added red text validation when form is submitted without selecting a payer.
+23. **Direct Entry Steppers**: Replaced sliders with Direct Entry + Large Steppers approach for custom split editor (more mobile-friendly).
 
 ### Server-Side Logic
 14. **Data Loading**: Created `+page.server.ts` to load data from database using Drizzle ORM queries.
@@ -58,10 +63,13 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 18. **Performance Optimization**: Used `Promise.all()` for parallel database queries in load function.
 
 ### Testing & Quality
-19. **Comprehensive Test Suite**: 56 tests across 5 test files covering all major functionality (including exchange rates and settlement calculations).
+19. **Comprehensive Test Suite**: 75 tests across 7 test files covering all major functionality (including exchange rates and settlement calculations).
 20. **Test Isolation**: Proper `beforeAll`/`afterAll` cleanup for all database tests.
 21. **Edge Case Coverage**: Tests for invalid amounts, missing fields, empty sheets, and boundary conditions.
 22. **Type Safety**: All TypeScript checks pass with no errors or warnings.
+23. **Extracted Logic Testing**: Created `splitLogic.test.ts` with 10 unit tests for the extracted custom split logic.
+24. **Settlement Calculation Tests**: Created `settlement-calculation.test.ts` with 7 test cases matching Chai test scenarios for settlement algorithm validation.
+24. **Settlement Calculation Tests**: Created `settlement-calculation.test.ts` with 7 test cases matching Chai test scenarios for settlement algorithm validation.
 
 ## Work In Progress / Next Steps
 
@@ -78,6 +86,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 1. **Expense Deletion** - Remove expenses from sheets (implemented, needs confirmation dialog)
 2. **Participant Management** - Edit/remove participants
 3. **Sheet Editing** - Edit sheet names/descriptions
+4. **Custom Split UI** - Intuitive interface for allocating expenses among specific participants
 
 ### Future Enhancements
 - Deployment to production environment (Cloudflare D1)
@@ -95,6 +104,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 - `src/lib/db/seed.ts` (Script to seed database with sample data)
 - `src/lib/nanoid.ts` (Utility for sheet ID generation/parsing)
 - `src/lib/cookie.ts` (Cookie utility for recent sheets tracking)
+- `src/lib/utils/splitLogic.ts` (Extracted utility functions for custom split logic)
 
 **UI Components:**
 - `src/lib/components/SheetHeader.svelte` - Sheet title and description
@@ -102,6 +112,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 - `src/lib/components/SettleUpButton.svelte` - Settlement button
 - `src/lib/components/Drawer.svelte` - Modal drawer for expense editing
 - `src/lib/components/ui/avatar-group/AvatarGroup.svelte` - Avatar group component for displaying participants below the title
+- `src/lib/components/CustomSplitEditor.svelte` - Custom split expense editor with sliders and allocation controls
 
 **Routes:**
 - `src/routes/+page.svelte` (Homepage UI with hero, features, and CTA form - dark mode)
@@ -109,11 +120,14 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 - `src/routes/sheets/[slug]/[nanoid]/+page.svelte` (Sheet page UI - dark mode)
 - `src/routes/sheets/[slug]/[nanoid]/+page.server.ts` (Server-side data loading and actions)
 
-**Test Files (37 tests total):**
+**Test Files (75 tests total):**
 - `test/nanoid.test.ts` (5 tests - nanoid generation and validation)
 - `test/create-sheet.test.ts` (14 tests - sheet creation form action)
 - `test/sheet-actions.test.ts` (13 tests - expense add/edit actions)
 - `test/sheet-page.test.ts` (5 tests - sheet page data loading)
+- `test/drawer-expense.test.ts` (19 tests - drawer expense form validation)
+- `test/splitLogic.test.ts` (10 tests - custom split logic validation)
+- `test/settlement-calculation.test.ts` (7 tests - settlement calculation validation matching Chai scenarios)
 
 **Specs & Documentation:**
 - `agent-os/specs/2026-03-11-1600-sheet-page-ui/` (Full spec for the sheet page feature)
@@ -138,6 +152,8 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 - Added explicit TypeScript types to all props
 - Used `Promise.all()` for parallel database queries
 - Consistent naming conventions and code organization
+- Created `CustomSplitEditor` component with intuitive UI for allocating expenses among participants
+- Extracted split logic into separate utility functions for better testability
 
 ### Testing
 - 37 comprehensive tests covering all functionality
@@ -166,6 +182,6 @@ npm run build
 
 ---
 
-**Last Updated**: 2026-03-14
-**Total Tests**: 56 passing
-**Type Check**: 0 errors, 2 warnings (minor Svelte 5 state binding patterns)
+**Last Updated**: 2026-03-15
+**Total Tests**: 75 passing
+**Type Check**: 0 errors, 5 warnings (minor Svelte 5 state binding patterns)
