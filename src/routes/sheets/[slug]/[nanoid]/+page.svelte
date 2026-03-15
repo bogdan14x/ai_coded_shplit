@@ -11,6 +11,7 @@ import CustomSplitEditor from '$lib/components/CustomSplitEditor.svelte';
 import { Root as AvatarGroup, Item as AvatarGroupItem } from '$lib/components/ui/avatar-group';
 import type { Sheet, Participant, Expense } from '$lib/db';
 import type { PageData, ActionData } from './$types';
+import { CURRENCIES } from '$lib/currencies';
 
   let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -19,38 +20,7 @@ import type { PageData, ActionData } from './$types';
   let settlementsState = $state((data as any).settlements || []);
 
   // Currency list from exchange rates (base EUR)
-  const currencies = [
-    { code: 'EUR', name: 'Euro', symbol: '€' },
-    { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
-    { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
-    { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
-    { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' },
-    { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
-    { code: 'CZK', name: 'Czech Koruna', symbol: 'Kč' },
-    { code: 'DKK', name: 'Danish Krone', symbol: 'kr' },
-    { code: 'GBP', name: 'British Pound', symbol: '£' },
-    { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
-    { code: 'HUF', name: 'Hungarian Forint', symbol: 'Ft' },
-    { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp' },
-    { code: 'ILS', name: 'Israeli Shekel', symbol: '₪' },
-    { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
-    { code: 'ISK', name: 'Icelandic Króna', symbol: 'kr' },
-    { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
-    { code: 'KRW', name: 'South Korean Won', symbol: '₩' },
-    { code: 'MXN', name: 'Mexican Peso', symbol: 'MX$' },
-    { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' },
-    { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
-    { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
-    { code: 'PHP', name: 'Philippine Peso', symbol: '₱' },
-    { code: 'PLN', name: 'Polish Złoty', symbol: 'zł' },
-    { code: 'RON', name: 'Romanian Leu', symbol: 'lei' },
-    { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
-    { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
-    { code: 'THB', name: 'Thai Baht', symbol: '฿' },
-    { code: 'TRY', name: 'Turkish Lira', symbol: '₺' },
-    { code: 'USD', name: 'US Dollar', symbol: '$' },
-    { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
-  ];
+  const currencies = CURRENCIES;
 
   // Get currency details by code
   function getCurrencyByCode(code: string) {

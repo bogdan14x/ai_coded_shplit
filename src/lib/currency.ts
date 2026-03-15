@@ -57,6 +57,7 @@ export async function getExchangeRate(baseCurrency: string, targetCurrency: stri
   }
 
   // Default to 1 if conversion not possible
+  console.warn(`Exchange rate not found for ${baseCurrency} -> ${targetCurrency}, defaulting to 1`);
   return 1;
 }
 
@@ -97,6 +98,7 @@ export async function normalizeExpensesToCurrency(
 
 // Calculate settlements between participants
 // Returns settlements (who pays whom) and final balances
+// Balances are returned in the smallest currency unit (cents), rounded to nearest integer
 export async function calculateSettlements(
   expenses: Expense[],
   participants: Participant[],
@@ -106,11 +108,12 @@ export async function calculateSettlements(
   settlements: Array<{ from: string; to: string; amount: number }>;
   balances: Record<number, number>;
 }> {
-  const balances: Record<number, number> = {};
+  // Use floating point for intermediate calculations to avoid rounding errors
+  const floatingBalances: Record<number, number> = {};
   
   // Initialize balances to 0
   participants.forEach(p => {
-    balances[p.id] = 0;
+    floatingBalances[p.id] = 0;
   });
 
   // Calculate balances in settlement currency
@@ -124,7 +127,7 @@ export async function calculateSettlements(
     );
     
     // Add to paidBy's balance (they paid, so they are owed money)
-    balances[expense.paidBy] = (balances[expense.paidBy] || 0) + Math.round(paidAmount);
+    floatingBalances[expense.paidBy] = (floatingBalances[expense.paidBy] || 0) + paidAmount;
     
     // Calculate shares
     if (expense.splitType === 'custom' && expense.customSplitData) {
@@ -139,30 +142,36 @@ export async function calculateSettlements(
             settlementCurrency,
             db
           );
-          balances[participantId] = (balances[participantId] || 0) - Math.round(shareAmount);
+          floatingBalances[participantId] = (floatingBalances[participantId] || 0) - shareAmount;
         }
       } catch (e) {
         console.error('Failed to parse custom split data', e);
         // Fallback to equal split if parsing fails
-        const sharePerPerson = Math.round(paidAmount / participants.length);
+        const sharePerPerson = paidAmount / participants.length;
         participants.forEach(p => {
-          balances[p.id] = (balances[p.id] || 0) - sharePerPerson;
+          floatingBalances[p.id] = (floatingBalances[p.id] || 0) - sharePerPerson;
         });
       }
     } else {
       // Equal split
-      const sharePerPerson = Math.round(paidAmount / participants.length);
+      const sharePerPerson = paidAmount / participants.length;
       participants.forEach(p => {
-        balances[p.id] = (balances[p.id] || 0) - sharePerPerson;
+        floatingBalances[p.id] = (floatingBalances[p.id] || 0) - sharePerPerson;
       });
     }
   }
+
+  // Round final balances to nearest cent
+  const roundedBalances: Record<number, number> = {};
+  Object.entries(floatingBalances).forEach(([idStr, balance]) => {
+    roundedBalances[parseInt(idStr, 10)] = Math.round(balance);
+  });
 
   // Min-Max algorithm for settlement calculation
   const debtors: Array<{ id: number; amount: number }> = [];
   const creditors: Array<{ id: number; amount: number }> = [];
   
-  Object.entries(balances).forEach(([idStr, balance]) => {
+  Object.entries(roundedBalances).forEach(([idStr, balance]) => {
     const id = parseInt(idStr, 10);
     if (balance < 0) {
       debtors.push({ id, amount: -balance }); // Convert to positive for easier processing
@@ -206,5 +215,5 @@ export async function calculateSettlements(
     if (creditor.amount < 0.01) j++;
   }
 
-  return { settlements, balances };
+  return { settlements, balances: roundedBalances };
 }
