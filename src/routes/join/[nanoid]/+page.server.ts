@@ -1,11 +1,11 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { db } from '$lib/db';
 import { sheets, participants } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
   const { nanoid } = params;
+  const db = locals.db;
 
   const sheet = await db.select().from(sheets).where(
     eq(sheets.nanoid, nanoid)
@@ -21,9 +21,10 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, params }) => {
+  default: async ({ request, params, locals }) => {
     const { nanoid } = params;
     const formData = await request.formData();
+    const db = locals.db;
 
     const displayName = formData.get('displayName') as string;
 

@@ -139,12 +139,12 @@ Add these environment variables to your Cloudflare Pages project:
 
 ### Database Adapter
 
-The application uses a dual-mode database adapter:
+The application uses Drizzle ORM with Cloudflare D1 for both local development and production:
 
-1. **Local Development**: Uses `better-sqlite3` with local SQLite file
+1. **Local Development**: Uses `miniflare` to create a D1-compatible database instance
 2. **Production**: Uses `drizzle-orm/d1` with Cloudflare D1
 
-The adapter automatically detects the environment and chooses the appropriate database connection.
+The adapter automatically detects the environment and chooses the appropriate database connection. Local development uses Miniflare to simulate Cloudflare D1 without requiring `better-sqlite3`.
 
 ### Schema Management
 

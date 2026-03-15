@@ -22,6 +22,17 @@ import {
   getOutdatedCurrencies
 } from './exchangeRateService';
 
+// Mock database
+const mockDb = {
+  select: vi.fn(() => ({
+    from: vi.fn(() => ({
+      where: vi.fn(() => ({
+        get: vi.fn()
+      }))
+    }))
+  }))
+};
+
 describe('outdatedCurrencyService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -31,14 +42,14 @@ describe('outdatedCurrencyService', () => {
     it('returns list of outdated currencies', async () => {
       (getOutdatedCurrencies as any).mockResolvedValue(['USD', 'GBP']);
 
-      const result = await getAllOutdatedCurrencies();
+      const result = await getAllOutdatedCurrencies(mockDb);
       expect(result).toEqual(['USD', 'GBP']);
     });
 
     it('returns empty array on error', async () => {
       (getOutdatedCurrencies as any).mockRejectedValue(new Error('DB Error'));
 
-      const result = await getAllOutdatedCurrencies();
+      const result = await getAllOutdatedCurrencies(mockDb);
       expect(result).toEqual([]);
     });
   });
@@ -47,21 +58,21 @@ describe('outdatedCurrencyService', () => {
     it('returns true for outdated currency', async () => {
       (isRateOutdated as any).mockResolvedValue(true);
 
-      const result = await isCurrencyOutdated('USD');
+      const result = await isCurrencyOutdated(mockDb, 'USD');
       expect(result).toBe(true);
     });
 
     it('returns false for fresh currency', async () => {
       (isRateOutdated as any).mockResolvedValue(false);
 
-      const result = await isCurrencyOutdated('USD');
+      const result = await isCurrencyOutdated(mockDb, 'USD');
       expect(result).toBe(false);
     });
 
     it('returns false on error', async () => {
       (isRateOutdated as any).mockRejectedValue(new Error('DB Error'));
 
-      const result = await isCurrencyOutdated('USD');
+      const result = await isCurrencyOutdated(mockDb, 'USD');
       expect(result).toBe(false);
     });
   });
@@ -70,22 +81,22 @@ describe('outdatedCurrencyService', () => {
     it('returns true on successful update', async () => {
       (fetchAndStoreRates as any).mockResolvedValue(undefined);
 
-      const result = await updateCurrencyRates('USD');
+      const result = await updateCurrencyRates(mockDb, 'USD');
       expect(result).toBe(true);
-      expect(fetchAndStoreRates).toHaveBeenCalledWith('USD');
+      expect(fetchAndStoreRates).toHaveBeenCalledWith(mockDb, 'USD');
     });
 
     it('returns false on error', async () => {
       (fetchAndStoreRates as any).mockRejectedValue(new Error('API Error'));
 
-      const result = await updateCurrencyRates('USD');
+      const result = await updateCurrencyRates(mockDb, 'USD');
       expect(result).toBe(false);
     });
 
     it('uses EUR as default base currency', async () => {
       (fetchAndStoreRates as any).mockResolvedValue(undefined);
 
-      await updateCurrencyRates('USD');
+      await updateCurrencyRates(mockDb, 'USD');
       expect(fetchAndStoreRates).toHaveBeenCalledWith('USD');
     });
   });
@@ -95,7 +106,7 @@ describe('outdatedCurrencyService', () => {
       (getOutdatedCurrencies as any).mockResolvedValue(['USD', 'GBP']);
       (fetchAndStoreRatesForMultipleBases as any).mockResolvedValue(undefined);
 
-      await updateOutdatedRatesInBackground();
+      await updateOutdatedRatesInBackground(mockDb, );
 
       expect(getOutdatedCurrencies).toHaveBeenCalled();
       expect(fetchAndStoreRatesForMultipleBases).toHaveBeenCalledWith(['EUR', 'USD', 'GBP']);
@@ -104,7 +115,7 @@ describe('outdatedCurrencyService', () => {
     it('does nothing if no outdated currencies', async () => {
       (getOutdatedCurrencies as any).mockResolvedValue([]);
 
-      await updateOutdatedRatesInBackground();
+      await updateOutdatedRatesInBackground(mockDb, );
 
       expect(getOutdatedCurrencies).toHaveBeenCalled();
       expect(fetchAndStoreRatesForMultipleBases).not.toHaveBeenCalled();
@@ -114,7 +125,7 @@ describe('outdatedCurrencyService', () => {
       (getOutdatedCurrencies as any).mockRejectedValue(new Error('DB Error'));
 
       // Should not throw
-      await expect(updateOutdatedRatesInBackground()).resolves.not.toThrow();
+      await expect(updateOutdatedRatesInBackground(mockDb, )).resolves.not.toThrow();
     });
   });
 
@@ -122,14 +133,14 @@ describe('outdatedCurrencyService', () => {
     it('returns true on successful update', async () => {
       (fetchAndStoreRates as any).mockResolvedValue(undefined);
 
-      const result = await updateCurrencyInBackground('USD');
+      const result = await updateCurrencyInBackground(mockDb, 'USD');
       expect(result).toBe(true);
     });
 
     it('returns false on error', async () => {
       (fetchAndStoreRates as any).mockRejectedValue(new Error('API Error'));
 
-      const result = await updateCurrencyInBackground('USD');
+      const result = await updateCurrencyInBackground(mockDb, 'USD');
       expect(result).toBe(false);
     });
   });

@@ -1,22 +1,19 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { fetchAndStoreRates, isRateOutdated, getOutdatedCurrencies, fetchAndStoreRatesForMultipleBases } from './exchangeRateService';
-import { db } from '$lib/db';
 import { exchangeRates } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 // Mock the database
-vi.mock('$lib/db', () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          get: vi.fn()
-        }))
+const mockDb = {
+  select: vi.fn(() => ({
+    from: vi.fn(() => ({
+      where: vi.fn(() => ({
+        get: vi.fn()
       }))
-    })),
-    transaction: vi.fn((callback) => callback({ insert: vi.fn() })),
-  }
-}));
+    }))
+  })),
+  transaction: vi.fn((callback) => callback({ insert: vi.fn() })),
+};
 
 // Mock fetch
 const mockFetch = vi.fn();
@@ -37,7 +34,7 @@ describe('exchangeRateService', () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await fetchAndStoreRates('EUR');
+      await fetchAndStoreRates(mockDb, 'EUR');
 
       expect(mockFetch).toHaveBeenCalledWith('https://api.frankfurter.dev/v1/latest?baseCurrency=EUR');
     });
@@ -49,13 +46,13 @@ describe('exchangeRateService', () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await expect(fetchAndStoreRates('EUR')).rejects.toThrow('Failed to fetch rates: Internal Server Error');
+      await expect(fetchAndStoreRates(mockDb, 'EUR')).rejects.toThrow('Failed to fetch rates: Internal Server Error');
     });
 
     it('throws error on network failure', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'));
 
-      await expect(fetchAndStoreRates('EUR')).rejects.toThrow('Network error');
+      await expect(fetchAndStoreRates(mockDb, 'EUR')).rejects.toThrow('Network error');
     });
   });
 
@@ -63,7 +60,7 @@ describe('exchangeRateService', () => {
     it('returns true if rate does not exist', async () => {
       // Mock empty result
       const mockGet = vi.fn().mockResolvedValue(undefined);
-      (db.select as any).mockReturnValue({
+      (mockDb.select as any).mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
             get: mockGet
@@ -71,14 +68,14 @@ describe('exchangeRateService', () => {
         })
       });
 
-      const result = await isRateOutdated('USD');
+      const result = await isRateOutdated(mockDb, 'USD');
       expect(result).toBe(true);
     });
 
     it('returns true if rate is older than 24h', async () => {
       const oldTimestamp = Math.floor(Date.now() / 1000) - (25 * 60 * 60); // 25 hours ago
       const mockGet = vi.fn().mockResolvedValue({ lastUpdated: oldTimestamp });
-      (db.select as any).mockReturnValue({
+      (mockDb.select as any).mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
             get: mockGet
@@ -86,14 +83,14 @@ describe('exchangeRateService', () => {
         })
       });
 
-      const result = await isRateOutdated('USD');
+      const result = await isRateOutdated(mockDb, 'USD');
       expect(result).toBe(true);
     });
 
     it('returns false if rate is recent', async () => {
       const recentTimestamp = Math.floor(Date.now() / 1000) - (1 * 60 * 60); // 1 hour ago
       const mockGet = vi.fn().mockResolvedValue({ lastUpdated: recentTimestamp });
-      (db.select as any).mockReturnValue({
+      (mockDb.select as any).mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
             get: mockGet
@@ -101,7 +98,7 @@ describe('exchangeRateService', () => {
         })
       });
 
-      const result = await isRateOutdated('USD');
+      const result = await isRateOutdated(mockDb, 'USD');
       expect(result).toBe(false);
     });
   });
@@ -121,9 +118,9 @@ describe('exchangeRateService', () => {
       });
       
       // Mock the db.select function
-      vi.spyOn(db, 'select').mockImplementation(mockSelect);
+      vi.spyOn(mockDb, 'select').mockImplementation(mockSelect);
 
-      const result = await getOutdatedCurrencies();
+      const result = await getOutdatedCurrencies(mockDb);
       expect(result).toContain('USD');
       expect(result).toContain('GBP');
     });
@@ -137,9 +134,9 @@ describe('exchangeRateService', () => {
         })
       });
       
-      vi.spyOn(db, 'select').mockImplementation(mockSelect);
+      vi.spyOn(mockDb, 'select').mockImplementation(mockSelect);
 
-      const result = await getOutdatedCurrencies();
+      const result = await getOutdatedCurrencies(mockDb);
       expect(result).toEqual([]);
     });
   });
@@ -152,7 +149,7 @@ describe('exchangeRateService', () => {
       };
       mockFetch.mockResolvedValue(mockResponse);
 
-      await fetchAndStoreRatesForMultipleBases(['EUR', 'USD']);
+      await fetchAndStoreRatesForMultipleBases(mockDb, ['EUR', 'USD']);
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(mockFetch).toHaveBeenCalledWith('https://api.frankfurter.dev/v1/latest?baseCurrency=EUR');
@@ -167,7 +164,7 @@ describe('exchangeRateService', () => {
           json: async () => ({ rates: { EUR: 0.92 } })
         });
 
-      await fetchAndStoreRatesForMultipleBases(['EUR', 'USD']);
+      await fetchAndStoreRatesForMultipleBases(mockDb, ['EUR', 'USD']);
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
     });

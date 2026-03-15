@@ -2,14 +2,15 @@ import { json } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 import { isCurrencyOutdated } from '$lib/services/outdatedCurrencyService';
 
-export async function GET({ url }: RequestEvent) {
+export async function GET({ url, locals }: RequestEvent) {
     const currency = url.searchParams.get('currency');
     if (!currency) {
         return json({ error: 'Currency parameter is required' }, { status: 400 });
     }
 
     try {
-        const outdated = await isCurrencyOutdated(currency);
+        const db = locals.db;
+        const outdated = await isCurrencyOutdated(db, currency);
         return json({ outdated });
     } catch (error) {
         console.error('Error checking currency outdated status:', error);

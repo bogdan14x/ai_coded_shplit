@@ -1,6 +1,5 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { db } from '$lib/db';
 import { sheets } from '$lib/db/schema';
 import { generateSheetId, validateNanoid } from '$lib/nanoid';
 
@@ -32,9 +31,10 @@ const INVALID_CHARS_PATTERN = /[!@#$%^&*()+=\[\]{};':"\\|,.<>\/?~`]+/u;
 const VALID_CHAR_PATTERN = /[\w\-_\s\p{Emoji}]/u;
 
 export const actions: Actions = {
-  default: async ({ request, cookies }) => {
+  default: async ({ request, cookies, locals }) => {
     const formData = await request.formData();
     const rawSheetName = formData.get('sheetName') as string;
+    const db = locals.db;
 
     if (typeof rawSheetName !== 'string') {
       return {

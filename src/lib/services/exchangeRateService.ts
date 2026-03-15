@@ -1,11 +1,12 @@
-import { db } from '$lib/db';
+// Database should be provided as a parameter from server context
+// This service should be called from server-side code
 import { exchangeRates } from '$lib/db/schema';
 import { eq, and, lt } from 'drizzle-orm';
 
 const BASE_CURRENCY = 'EUR';
 const API_URL = 'https://api.frankfurter.dev/v1/latest';
 
-export async function fetchAndStoreRates(baseCurrency: string = BASE_CURRENCY) {
+export async function fetchAndStoreRates(db: any, baseCurrency: string = BASE_CURRENCY) {
     console.log(`Fetching rates for base: ${baseCurrency}`);
     const response = await fetch(`${API_URL}?baseCurrency=${baseCurrency}`);
     if (!response.ok) {
@@ -38,7 +39,7 @@ export async function fetchAndStoreRates(baseCurrency: string = BASE_CURRENCY) {
     console.log('Rates updated successfully');
 }
 
-export async function isRateOutdated(targetCurrency: string, baseCurrency: string = BASE_CURRENCY): Promise<boolean> {
+export async function isRateOutdated(db: any, targetCurrency: string, baseCurrency: string = BASE_CURRENCY): Promise<boolean> {
     const cutoffTime = Math.floor(Date.now() / 1000) - (24 * 60 * 60); // 24 hours ago in Unix timestamp
     
     const rate = await db.select()
@@ -56,7 +57,7 @@ export async function isRateOutdated(targetCurrency: string, baseCurrency: strin
 }
 
 // Get all currencies with outdated rates (>24h old)
-export async function getOutdatedCurrencies(): Promise<string[]> {
+export async function getOutdatedCurrencies(db: any): Promise<string[]> {
     const cutoffTime = Math.floor(Date.now() / 1000) - (24 * 60 * 60);
     
     const results = await db
@@ -70,11 +71,12 @@ export async function getOutdatedCurrencies(): Promise<string[]> {
 
 // Fetch rates for multiple base currencies
 export async function fetchAndStoreRatesForMultipleBases(
+    db: any,
     baseCurrencies: string[] = ['EUR']
 ): Promise<void> {
     for (const base of baseCurrencies) {
         try {
-            await fetchAndStoreRates(base);
+            await fetchAndStoreRates(db, base);
         } catch (error) {
             console.error(`Failed to fetch rates for base ${base}:`, error);
             // Continue with other bases

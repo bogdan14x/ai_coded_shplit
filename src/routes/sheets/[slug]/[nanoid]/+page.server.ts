@@ -7,7 +7,43 @@ import type { Actions, PageServerLoad } from "./$types";
 
 // Helper function to validate and parse expense form data
 	async function validateExpenseForm(formData: FormData, sheetId: number, db: any) {
-		// ... function body
+		const paidByStr = formData.get('paidBy')?.toString();
+		const description = formData.get('description')?.toString();
+		const amountStr = formData.get('amount')?.toString();
+		const currency = formData.get('currency')?.toString() || 'USD';
+		const splitType = formData.get('splitType')?.toString() || 'equal';
+		const customSplitData = formData.get('customSplitData')?.toString();
+
+		if (!paidByStr) {
+			return { error: 'Paid by is required' };
+		}
+
+		const paidBy = parseInt(paidByStr, 10);
+		if (isNaN(paidBy)) {
+			return { error: 'Invalid paid by ID' };
+		}
+
+		if (!description || description.trim().length < 1) {
+			return { error: 'Description is required' };
+		}
+
+		if (!amountStr) {
+			return { error: 'Amount is required' };
+		}
+
+		const amount = parseInt(amountStr, 10);
+		if (isNaN(amount) || amount <= 0) {
+			return { error: 'Invalid amount' };
+		}
+
+		return {
+			paidBy,
+			description: description.trim(),
+			amount,
+			currency,
+			splitType,
+			customSplitData: splitType === 'custom' ? customSplitData : null,
+		};
 	}
 
 // Helper function to get sheet by params
@@ -58,13 +94,14 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		expensesList,
 		participantsList,
 		sheet.settlementCurrency || "USD",
+		db
 	);
 
 	// Check for outdated exchange rates across all currencies in database
 	// This is a non-blocking check that can fail silently
 	let outdatedCurrencies: string[] = [];
 	try {
-		outdatedCurrencies = await getAllOutdatedCurrencies();
+		outdatedCurrencies = await getAllOutdatedCurrencies(db);
 	} catch (error) {
 		console.error("Failed to check outdated currencies:", error);
 		// Continue without this information
@@ -81,16 +118,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-	addExpense: async ({ request, params }) => {
+	addExpense: async ({ request, params, locals }) => {
 		const { slug, nanoid } = params;
 		const formData = await request.formData();
+		const db = locals.db;
 
-		const sheet = await getSheetByParams(slug, nanoid);
+		const sheet = await getSheetByParams(db, slug, nanoid);
 		if (!sheet) {
 			return { error: "Sheet not found" };
 		}
 
-		const validation = await validateExpenseForm(formData, sheet.id);
+		const validation = await validateExpenseForm(formData, sheet.id, db);
 		if ("error" in validation) {
 			return { error: validation.error };
 		}
@@ -109,7 +147,7 @@ export const actions: Actions = {
 			})
 			.run();
 
-		const updatedExpenses = await getUpdatedExpenses(sheet.id);
+		const updatedExpenses = await getUpdatedExpenses(db, sheet.id);
 
 		return {
 			success: true,
@@ -117,9 +155,10 @@ export const actions: Actions = {
 		};
 	},
 
-	editExpense: async ({ request, params }) => {
+	editExpense: async ({ request, params, locals }) => {
 		const { slug, nanoid } = params;
 		const formData = await request.formData();
+		const db = locals.db;
 
 		const expenseIdStr = formData.get("expenseId")?.toString();
 		if (!expenseIdStr) {
@@ -131,7 +170,7 @@ export const actions: Actions = {
 			return { error: "Invalid expense ID" };
 		}
 
-		const sheet = await getSheetByParams(slug, nanoid);
+		const sheet = await getSheetByParams(db, slug, nanoid);
 		if (!sheet) {
 			return { error: "Sheet not found" };
 		}
@@ -150,7 +189,7 @@ export const actions: Actions = {
 			};
 		}
 
-		const validation = await validateExpenseForm(formData, sheet.id);
+		const validation = await validateExpenseForm(formData, sheet.id, db);
 		if ("error" in validation) {
 			return { error: validation.error };
 		}
@@ -169,7 +208,7 @@ export const actions: Actions = {
 			.where(eq(expenses.id, expenseId))
 			.run();
 
-		const updatedExpenses = await getUpdatedExpenses(sheet.id);
+		const updatedExpenses = await getUpdatedExpenses(db, sheet.id);
 
 		return {
 			success: true,
@@ -177,9 +216,10 @@ export const actions: Actions = {
 		};
 	},
 
-	deleteExpense: async ({ request, params }) => {
+	deleteExpense: async ({ request, params, locals }) => {
 		const { slug, nanoid } = params;
 		const formData = await request.formData();
+		const db = locals.db;
 
 		const expenseIdStr = formData.get("expenseId")?.toString();
 		if (!expenseIdStr) {
@@ -191,7 +231,7 @@ export const actions: Actions = {
 			return { error: "Invalid expense ID" };
 		}
 
-		const sheet = await getSheetByParams(slug, nanoid);
+		const sheet = await getSheetByParams(db, slug, nanoid);
 		if (!sheet) {
 			return { error: "Sheet not found" };
 		}
@@ -212,7 +252,7 @@ export const actions: Actions = {
 
 		await db.delete(expenses).where(eq(expenses.id, expenseId)).run();
 
-		const updatedExpenses = await getUpdatedExpenses(sheet.id);
+		const updatedExpenses = await getUpdatedExpenses(db, sheet.id);
 
 		return {
 			success: true,
@@ -220,16 +260,17 @@ export const actions: Actions = {
 		};
 	},
 
-	updateSettlementCurrency: async ({ request, params }) => {
+	updateSettlementCurrency: async ({ request, params, locals }) => {
 		const { slug, nanoid } = params;
 		const formData = await request.formData();
+		const db = locals.db;
 
 		const currency = formData.get("currency")?.toString();
 		if (!currency) {
 			return { error: "Currency is required" };
 		}
 
-		const sheet = await getSheetByParams(slug, nanoid);
+		const sheet = await getSheetByParams(db, slug, nanoid);
 		if (!sheet) {
 			return { error: "Sheet not found" };
 		}
@@ -258,6 +299,7 @@ export const actions: Actions = {
 			expensesList,
 			participantsList,
 			currency,
+			db
 		);
 
 		return { success: true, settlements, settlementCurrency: currency };

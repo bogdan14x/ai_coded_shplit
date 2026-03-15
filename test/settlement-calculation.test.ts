@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateSettlements } from '../src/lib/currency';
-import type { Expense, Participant } from '../src/lib/db';
+import type { Expense, Participant } from '../src/lib/db/schema';
 
 // Helper to create participants with consistent IDs
 function createParticipants(names: string[]): Participant[] {

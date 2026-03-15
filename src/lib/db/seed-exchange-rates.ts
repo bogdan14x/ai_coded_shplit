@@ -1,51 +1,6 @@
-import { db } from './index';
-import { exchangeRates } from './schema';
+// Seed script for D1 database
+// Run using: wrangler d1 execute shibasplit --local --file src/lib/db/seed-exchange-rates.sql
+// Or use the migration scripts in drizzle/ directory
 
-// Exchange rates from the provided data (base EUR)
-const rates = {
-  "AUD": 1.6293,
-  "BRL": 6.0172,
-  "CAD": 1.5726,
-  "CHF": 0.9034,
-  "CNY": 7.9145,
-  "CZK": 24.437,
-  "DKK": 7.4726,
-  "GBP": 0.86503,
-  "HKD": 8.9827,
-  "HUF": 391.48,
-  "IDR": 19395.07,
-  "ILS": 3.5883,
-  "INR": 106.0205,
-  "ISK": 144.2,
-  "JPY": 182.85,
-  "KRW": 1711.87,
-  "MXN": 20.4517,
-  "MYR": 4.5198,
-  "NOK": 11.159,
-  "NZD": 1.9691,
-  "PHP": 68.301,
-  "PLN": 4.2675,
-  "RON": 5.0947,
-  "SEK": 10.7545,
-  "SGD": 1.4685,
-  "THB": 36.953,
-  "TRY": 50.7122,
-  "USD": 1.1476,
-  "ZAR": 19.2754,
-};
-
-// Clear existing rates and insert new ones
-db.run('DELETE FROM exchange_rates');
-
-const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
-
-const exchangeRateEntries = Object.entries(rates).map(([targetCurrency, rate]) => ({
-  baseCurrency: 'EUR',
-  targetCurrency,
-  rate,
-  lastUpdated: timestamp,
-}));
-
-db.insert(exchangeRates).values(exchangeRateEntries).run();
-
-console.log('Exchange rates seeded successfully!');
+// This file is deprecated - use SQL migrations instead
+export {};

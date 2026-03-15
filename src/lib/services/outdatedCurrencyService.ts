@@ -4,16 +4,15 @@ import {
   isRateOutdated,
   getOutdatedCurrencies,
 } from './exchangeRateService';
-import { db } from '$lib/db';
 import { exchangeRates } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 /**
  * Get all currencies in the database that have outdated rates (>24h old)
  */
-export async function getAllOutdatedCurrencies(): Promise<string[]> {
+export async function getAllOutdatedCurrencies(db: any): Promise<string[]> {
   try {
-    return await getOutdatedCurrencies();
+    return await getOutdatedCurrencies(db);
   } catch (error) {
     console.error('Failed to get outdated currencies:', error);
     return [];
@@ -23,9 +22,9 @@ export async function getAllOutdatedCurrencies(): Promise<string[]> {
 /**
  * Check if a specific currency has an outdated rate
  */
-export async function isCurrencyOutdated(currency: string, baseCurrency: string = 'EUR'): Promise<boolean> {
+export async function isCurrencyOutdated(db: any, currency: string, baseCurrency: string = 'EUR'): Promise<boolean> {
   try {
-    return await isRateOutdated(currency, baseCurrency);
+    return await isRateOutdated(db, currency, baseCurrency);
   } catch (error) {
     console.error(`Failed to check if currency ${currency} is outdated:`, error);
     return false; // Assume not outdated if check fails
@@ -37,11 +36,12 @@ export async function isCurrencyOutdated(currency: string, baseCurrency: string 
  * Returns true if successful, false otherwise
  */
 export async function updateCurrencyRates(
+  db: any,
   currency: string,
   baseCurrency: string = 'EUR'
 ): Promise<boolean> {
   try {
-    await fetchAndStoreRates(baseCurrency);
+    await fetchAndStoreRates(db, baseCurrency);
     return true;
   } catch (error) {
     console.error(`Failed to update rates for ${currency} (base: ${baseCurrency}):`, error);
@@ -53,9 +53,9 @@ export async function updateCurrencyRates(
  * Background update all outdated currencies
  * This is designed to run without blocking the page load
  */
-export async function updateOutdatedRatesInBackground(): Promise<void> {
+export async function updateOutdatedRatesInBackground(db: any): Promise<void> {
   try {
-    const outdated = await getAllOutdatedCurrencies();
+    const outdated = await getAllOutdatedCurrencies(db);
     
     // Check if database is empty (no rates at all)
     let isDbEmpty = false;
@@ -81,7 +81,7 @@ export async function updateOutdatedRatesInBackground(): Promise<void> {
     console.log(message);
     
     // Update all common base currencies to ensure comprehensive coverage
-    await fetchAndStoreRatesForMultipleBases(['EUR', 'USD', 'GBP']);
+    await fetchAndStoreRatesForMultipleBases(db, ['EUR', 'USD', 'GBP']);
     
     console.log('Background rate update completed');
   } catch (error) {
@@ -95,11 +95,12 @@ export async function updateOutdatedRatesInBackground(): Promise<void> {
  * Returns a promise that resolves when update completes (or fails)
  */
 export async function updateCurrencyInBackground(
+  db: any,
   currency: string,
   baseCurrency: string = 'EUR'
 ): Promise<boolean> {
   try {
-    await fetchAndStoreRates(baseCurrency);
+    await fetchAndStoreRates(db, baseCurrency);
     return true;
   } catch (error) {
     console.error(`Background update failed for ${currency}:`, error);

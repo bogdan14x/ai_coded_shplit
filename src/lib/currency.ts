@@ -1,36 +1,34 @@
-import { createSQLiteDB } from '$lib/db';
-
-// Use local SQLite for this service
-const db = createSQLiteDB();
 import { exchangeRates } from '$lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import type { Expense, Participant } from '$lib/db/schema';
 
 // Get exchange rate from base currency to target currency
-export async function getExchangeRate(baseCurrency: string, targetCurrency: string): Promise<number> {
+export async function getExchangeRate(baseCurrency: string, targetCurrency: string, db?: any): Promise<number> {
   // If currencies are the same, return 1
   if (baseCurrency === targetCurrency) {
     return 1;
   }
 
-  // Try to get rate from database
-  const rate = await db.select()
-    .from(exchangeRates)
-    .where(
-      and(
-        eq(exchangeRates.baseCurrency, baseCurrency),
-        eq(exchangeRates.targetCurrency, targetCurrency)
+  // Try to get rate from database (if db is provided)
+  if (db) {
+    const rate = await db.select()
+      .from(exchangeRates)
+      .where(
+        and(
+          eq(exchangeRates.baseCurrency, baseCurrency),
+          eq(exchangeRates.targetCurrency, targetCurrency)
+        )
       )
-    )
-    .get();
+      .get();
 
-  if (rate) {
-    return rate.rate;
+    if (rate) {
+      return rate.rate;
+    }
   }
 
   // If not found, try to calculate via EUR as intermediary
   // This assumes we have rates from EUR to all currencies
-  if (baseCurrency !== 'EUR') {
+  if (db && baseCurrency !== 'EUR') {
     // Fetch rate from EUR to baseCurrency (e.g., EUR->USD)
     const eurToBase = await db.select()
       .from(exchangeRates)
@@ -66,16 +64,18 @@ export async function getExchangeRate(baseCurrency: string, targetCurrency: stri
 export async function convertCurrency(
   amount: number, 
   fromCurrency: string, 
-  toCurrency: string
+  toCurrency: string,
+  db: any
 ): Promise<number> {
-  const rate = await getExchangeRate(fromCurrency, toCurrency);
+  const rate = await getExchangeRate(fromCurrency, toCurrency, db);
   return amount * rate;
 }
 
 // Normalize list of expenses to a target currency
 export async function normalizeExpensesToCurrency(
   expenses: Array<{ amount: number; currency: string }>,
-  targetCurrency: string
+  targetCurrency: string,
+  db: any
 ): Promise<Array<{ amount: number; currency: string }>> {
   const normalized: Array<{ amount: number; currency: string }> = [];
   
@@ -83,7 +83,8 @@ export async function normalizeExpensesToCurrency(
     const convertedAmount = await convertCurrency(
       expense.amount, 
       expense.currency, 
-      targetCurrency
+      targetCurrency,
+      db
     );
     normalized.push({
       amount: Math.round(convertedAmount), // Round to cents
@@ -99,7 +100,8 @@ export async function normalizeExpensesToCurrency(
 export async function calculateSettlements(
   expenses: Expense[],
   participants: Participant[],
-  settlementCurrency: string
+  settlementCurrency: string,
+  db?: any
 ): Promise<{
   settlements: Array<{ from: string; to: string; amount: number }>;
   balances: Record<number, number>;
@@ -117,7 +119,8 @@ export async function calculateSettlements(
     const paidAmount = await convertCurrency(
       expense.amount,
       expenseCurrency,
-      settlementCurrency
+      settlementCurrency,
+      db
     );
     
     // Add to paidBy's balance (they paid, so they are owed money)
@@ -133,7 +136,8 @@ export async function calculateSettlements(
           const shareAmount = await convertCurrency(
             amountInCents,
             expenseCurrency,
-            settlementCurrency
+            settlementCurrency,
+            db
           );
           balances[participantId] = (balances[participantId] || 0) - Math.round(shareAmount);
         }
