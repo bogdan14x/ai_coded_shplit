@@ -3,6 +3,8 @@
 
 name = "shibasplit"
 compatibility_date = "2026-03-15"
+pages_build_output_dir = "build"
+compatibility_flags = ["nodejs_compat"]
 
 # D1 Database configuration
 [[d1_databases]]
@@ -11,10 +13,15 @@ database_name = "shibasplit"
 database_id = "be4c2ed8-6a43-49bb-b39d-906d3322c176"
 
 # Environment variables
-[env.development]
-name = "shibasplit-dev"
+[env.preview]
+name = "shibasplit-preview"
 compatibility_date = "2026-03-15"
 
 [env.production]
 name = "shibasplit"
 compatibility_date = "2026-03-15"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "shibasplit"
+database_id = "be4c2ed8-6a43-49bb-b39d-906d3322c176"
