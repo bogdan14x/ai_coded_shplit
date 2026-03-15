@@ -12,11 +12,11 @@
 </script>
 
 <header class="sheet-header mb-6 slide-up">
-  <div class="flex items-baseline gap-3">
-    <h1 class="text-3xl font-display font-bold tracking-tight text-white">{title}</h1>
+  <div class="flex flex-col items-center gap-3">
+    <!-- Copy Invite Link Button - Pill shape with border, centered above title -->
     <button
       onclick={handleCopy}
-      class="px-3 py-1.5 bg-transparent hover:bg-neutral-800 text-neutral-400 hover:text-neutral-300 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer"
+      class="px-4 py-2 border-2 border-[#CB8E4C] text-[#CB8E4C] hover:bg-[#CB8E4C] hover:text-white text-xs font-medium rounded-full transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer"
     >
       {#if copySuccess}
         <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,8 +30,12 @@
         <span>Copy Invite Link</span>
       {/if}
     </button>
+    
+    <div class="flex items-baseline gap-3">
+      <h1 class="text-3xl font-display font-bold tracking-tight text-white">{title}</h1>
+    </div>
+    {#if description}
+      <p class="text-neutral-400 mt-2 text-lg">{description}</p>
+    {/if}
   </div>
-  {#if description}
-    <p class="text-neutral-400 mt-2 text-lg">{description}</p>
-  {/if}
 </header>

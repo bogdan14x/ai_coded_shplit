@@ -54,6 +54,7 @@ The ultimate goal of the app is to allow users to create expense sheets via uniq
 21. **Expense Pagination**: Added pagination to ExpenseList component showing 50 expenses per page with client-side navigation.
 22. **Paid By Validation**: Added red text validation when form is submitted without selecting a payer.
 23. **Direct Entry Steppers**: Replaced sliders with Direct Entry + Large Steppers approach for custom split editor (more mobile-friendly).
+24. **Pill-shaped Invite Button**: Updated copy invite link button to pill shape with accent border, centered above sheet title.
 
 ### Server-Side Logic
 14. **Data Loading**: Created `+page.server.ts` to load data from database using Drizzle ORM queries.
