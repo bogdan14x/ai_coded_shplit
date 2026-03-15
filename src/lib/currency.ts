@@ -1,4 +1,7 @@
-import { db } from '$lib/db';
+import { createSQLiteDB } from '$lib/db';
+
+// Use local SQLite for this service
+const db = createSQLiteDB();
 import { exchangeRates } from '$lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import type { Expense, Participant } from '$lib/db/schema';

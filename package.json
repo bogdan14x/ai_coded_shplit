@@ -15,15 +15,18 @@
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
 		"test:e2e:headed": "playwright test --headed",
-		"d1:migrate": "wrangler d1 execute shibasplit --local --file ./drizzle/0001_*.sql",
+		"d1:migrate": "tsx scripts/migrate-d1.ts",
 		"d1:create": "wrangler d1 create shibasplit",
+		"d1:init:local": "tsx scripts/init-local-db.ts",
 		"d1:seed": "tsx scripts/seed-d1.ts",
-		"db:generate": "drizzle-kit generate --config drizzle.config.d1.ts",
-		"db:push": "drizzle-kit push --config drizzle.config.d1.ts"
+		"db:generate": "drizzle-kit generate --config drizzle.config.sqlite.ts",
+		"db:push": "drizzle-kit push --config drizzle.config.sqlite.ts",
+		"db:d1:generate": "drizzle-kit generate --config drizzle.config.d1.ts"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.58.2",
 		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-cloudflare": "^7.2.8",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/postcss": "^4.2.1",
@@ -44,7 +47,8 @@
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
 		"vitest": "^4.0.18",
-		"vitest-browser-svelte": "^2.0.2"
+		"vitest-browser-svelte": "^2.0.2",
+		"wrangler": "^4.73.0"
 	},
 	"dependencies": {
 		"better-sqlite3": "^12.6.2",

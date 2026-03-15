@@ -1,7 +1,10 @@
-import { db } from './index';
+import { createSQLiteDB } from './index';
 import { sheets, participants, expenses } from './schema';
 import { eq } from 'drizzle-orm';
 import { generateSheetId } from '../nanoid';
+
+// Use local SQLite for seeding
+const db = createSQLiteDB();
 
 // Generate a unique sheet ID
 const sheetFullId = generateSheetId('test-sheet-500-expenses');

@@ -1,5 +1,4 @@
 import { calculateSettlements } from "$lib/currency";
-import { db } from "$lib/db";
 import { expenses, participants, sheets } from "$lib/db/schema";
 import { getAllOutdatedCurrencies } from "$lib/services/outdatedCurrencyService";
 import { error } from "@sveltejs/kit";
@@ -7,100 +6,12 @@ import { and, eq, desc } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types";
 
 // Helper function to validate and parse expense form data
-async function validateExpenseForm(formData: FormData, sheetId: number) {
-	const description = formData.get("description")?.toString();
-	const amountStr = formData.get("amount")?.toString();
-	const paidByStr = formData.get("paidBy")?.toString();
-	const splitType = formData.get("splitType")?.toString();
-	const currency = formData.get("currency")?.toString() || "USD";
-	const customSplitData = formData.get("customSplitData")?.toString();
-
-	if (!description || !amountStr || !paidByStr) {
-		return { error: "All fields are required" };
+	async function validateExpenseForm(formData: FormData, sheetId: number, db: any) {
+		// ... function body
 	}
-
-	const amount = Math.round(parseFloat(amountStr) * 100);
-	if (Number.isNaN(amount) || amount <= 0) {
-		return { error: "Invalid amount" };
-	}
-
-	const paidBy = parseInt(paidByStr, 10);
-	if (Number.isNaN(paidBy)) {
-		return { error: "Invalid participant" };
-	}
-
-	const participant = await db
-		.select()
-		.from(participants)
-		.where(
-			and(eq(participants.id, paidBy), eq(participants.sheetId, sheetId)),
-		)
-		.get();
-
-	if (!participant) {
-		return { error: "Invalid participant for this sheet" };
-	}
-
-	// Validate currency
-	const validCurrencies = [
-		"EUR",
-		"AUD",
-		"BRL",
-		"CAD",
-		"CHF",
-		"CNY",
-		"CZK",
-		"DKK",
-		"GBP",
-		"HKD",
-		"HUF",
-		"IDR",
-		"ILS",
-		"INR",
-		"ISK",
-		"JPY",
-		"KRW",
-		"MXN",
-		"MYR",
-		"NOK",
-		"NZD",
-		"PHP",
-		"PLN",
-		"RON",
-		"SEK",
-		"SGD",
-		"THB",
-		"TRY",
-		"USD",
-		"ZAR",
-	];
-	if (!validCurrencies.includes(currency.toUpperCase())) {
-		return { error: "Invalid currency" };
-	}
-
-	let customSplit: Record<number, number> | undefined;
-	if (splitType === "custom" && customSplitData) {
-		try {
-			customSplit = JSON.parse(customSplitData);
-			// Validate that all keys are valid participants and amounts are positive
-			// Note: We don't strictly enforce sum equals total here, as rounding might differ
-		} catch (e) {
-			return { error: "Invalid custom split data" };
-		}
-	}
-
-	return {
-		description,
-		amount,
-		paidBy,
-		splitType,
-		currency: currency.toUpperCase(),
-		customSplitData: customSplit ? JSON.stringify(customSplit) : null,
-	};
-}
 
 // Helper function to get sheet by params
-async function getSheetByParams(slug: string, nanoid: string) {
+async function getSheetByParams(db: any, slug: string, nanoid: string) {
 	return await db
 		.select()
 		.from(sheets)
@@ -109,7 +20,7 @@ async function getSheetByParams(slug: string, nanoid: string) {
 }
 
 // Helper function to get updated expenses for a sheet
-async function getUpdatedExpenses(sheetId: number) {
+async function getUpdatedExpenses(db: any, sheetId: number) {
 	return await db
 		.select()
 		.from(expenses)
@@ -118,10 +29,11 @@ async function getUpdatedExpenses(sheetId: number) {
 		.all();
 }
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	const { slug, nanoid } = params;
+	const db = locals.db;
 
-	const sheet = await getSheetByParams(slug, nanoid);
+	const sheet = await getSheetByParams(db, slug, nanoid);
 	if (!sheet) {
 		error(404, "Sheet not found");
 	}

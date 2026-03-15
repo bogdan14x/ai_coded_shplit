@@ -1,18 +1,20 @@
-# Cloudflare Workers + D1 configuration
+# Cloudflare Pages + D1 configuration
+# For SvelteKit deployment to Cloudflare Pages with D1 database
 
 name = "shibasplit"
-main = "src/worker.ts"
 compatibility_date = "2026-03-15"
 
 # D1 Database configuration
 [[d1_databases]]
-binding = "DB" # used in worker code
+binding = "DB" # used in SvelteKit hooks and routes
 database_name = "shibasplit"
-database_id = "dev" # change to actual database ID when deploying to production
+database_id = "be4c2ed8-6a43-49bb-b39d-906d3322c176"
 
-# Environment variables for local development
+# Environment variables
 [env.development]
 name = "shibasplit-dev"
+compatibility_date = "2026-03-15"
 
 [env.production]
 name = "shibasplit"
+compatibility_date = "2026-03-15"

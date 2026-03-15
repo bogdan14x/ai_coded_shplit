@@ -40,3 +40,48 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+## Database Migrations
+
+This project uses Drizzle ORM with Cloudflare D1 for production and SQLite for local development.
+
+### Local Development (SQLite)
+
+```sh
+# Generate migrations
+npm run db:generate
+
+# Push schema changes to local SQLite
+npm run db:push
+
+# Seed local database
+npm run d1:seed
+```
+
+### Production (Cloudflare D1)
+
+```sh
+# Create D1 database (one-time setup)
+npm run d1:create
+
+# Generate and apply migrations to D1
+npm run d1:migrate
+
+# Seed D1 database
+npm run d1:seed
+```
+
+### Migration Workflow
+
+1. **Make schema changes** in `src/lib/db/schema.ts`
+2. **Generate migrations**: `npm run db:generate` (SQLite) or `npm run db:d1:generate` (D1)
+3. **Review migration files** in `drizzle/` directory
+4. **Apply migrations**: 
+   - Local: `npm run db:push` (SQLite) or `npm run d1:migrate` (D1 local)
+   - Production: `npm run d1:migrate` (sets `D1_LOCAL=false`)
+
+### Environment Variables
+
+- `D1_DATABASE_NAME`: Database name (default: `shibasplit`)
+- `D1_DATABASE_ID`: Database ID (default: `dev`)
+- `D1_LOCAL`: Set to `false` for production D1 migrations (default: `true`)
